@@ -106,7 +106,7 @@
   }
   #player-container, #player-container iframe{
     position:absolute; inset:0; width:100%; height:100%; border:0;
-    filter:contrast(1.1) saturate(.8) brightness(.95) blur(.35px);
+    filter:contrast(1.1) saturate(.8) brightness(.95);
   }
 
   .fx-layer{ position:absolute; inset:0; pointer-events:none; }
@@ -146,7 +146,11 @@
     0%,97%,100%{opacity:0;} 97.5%{opacity:.04;} 98%{opacity:0;} 98.6%{opacity:.06;} 99%{opacity:0;}
   }
 
-  canvas.fx-static{ z-index:20; opacity:0; transition:opacity .12s linear; }
+  canvas.fx-static{
+    position:absolute; inset:0; width:100%; height:100%;
+    z-index:20; opacity:0; pointer-events:none;
+    transition:opacity .12s linear;
+  }
   canvas.fx-static.on{ opacity:1; }
 
   .now-playing{
@@ -157,6 +161,7 @@
     max-width:70%;
     transform:translateY(140%);
     opacity:0;
+    pointer-events:none;
     transition:transform .35s ease, opacity .35s ease;
     text-transform:uppercase;
     letter-spacing:.5px;
@@ -174,6 +179,7 @@
     text-shadow:1px 0 var(--magenta), -1px 0 var(--cyan);
     letter-spacing:1px;
     user-select:none;
+    pointer-events:none;
   }
 
   .power-screen{
@@ -412,6 +418,10 @@
       <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l10-6z"/></svg>
       Next
     </button>
+    <button class="deck-btn" id="btnSkipAd" title="Skip this video (use if a YouTube ad is playing)">
+      <svg viewBox="0 0 24 24"><path d="M4 6v12l8-6zM13 6v12l8-6z"/></svg>
+      Skip Ad
+    </button>
     <button class="deck-btn" id="btnShuffle" title="Shuffle">
       <svg viewBox="0 0 24 24"><path d="M17 3l4 4-4 4V8h-3.6a3 3 0 0 0-2.5 1.4L7 18H3v-2h3l4-6.6A5 5 0 0 1 13.4 6H17V3zM17 21l4-4-4-4v3h-3.6a5 5 0 0 1-4.1-2.4L7 8H3V6h4a3 3 0 0 1 2.5 1.4L13 15h4v3z"/></svg>
       Shuffle
@@ -466,6 +476,7 @@ const PLAYLIST = [
   { id:"IGVZOLV9SPo", title:"Love Is a Battlefield", artist:"Pat Benatar", year:1983 },
   { id:"XZVpR3Pk-r8", title:"Tainted Love", artist:"Soft Cell", year:1981 },
   { id:"TvnYmWpD_T8", title:"Purple Rain", artist:"Prince", year:1984 },
+  { id:"6p-lDYPR2P8", title:"Material Girl", artist:"Madonna", year:1984 },
   { id:"oRdxUFDoQe0", title:"Beat It", artist:"Michael Jackson", year:1983 },
   { id:"uPudE8nDog0", title:"Don't You Want Me", artist:"The Human League", year:1981 },
   { id:"lcOxhH8N3Bo", title:"Total Eclipse of the Heart", artist:"Bonnie Tyler", year:1983 },
@@ -473,6 +484,7 @@ const PLAYLIST = [
   { id:"ltrMfT4Qz5Y", title:"Footloose", artist:"Kenny Loggins", year:1984 },
   { id:"PIb6AZdTr-A", title:"Girls Just Want to Have Fun", artist:"Cyndi Lauper", year:1983 },
   { id:"KOok1WzZbOY", title:"California Dreamin'", artist:"The Mamas & the Papas", year:1965 },
+  { id:"6YAcOPPRpVY", title:"California Dreamin' (Stranger Things Cover)", artist:"The Beach Boys", year:1986 },
   { id:"hTWKbfoikeg", title:"Smells Like Teen Spirit", artist:"Nirvana", year:1991 },
   { id:"w6Q3mHyzn78", title:"I Think We're Alone Now", artist:"Tiffany", year:1987 },
   { id:"PaKr9gWqwl4", title:"Only Love Can Hurt Like This", artist:"Paloma Faith", year:2014 },
@@ -497,6 +509,7 @@ const PLAYLIST = [
   { id:"h_D3VFfhvs4", title:"Smooth Criminal", artist:"Michael Jackson", year:1988 },
   { id:"JmcA9LIIXWw", title:"Karma Chameleon", artist:"Culture Club", year:1983 },
   { id:"vNoKguSdy4Y", title:"I Knew You Were Trouble", artist:"Taylor Swift", year:2012 },
+  { id:"-BjZmE2gtdo", title:"Lover", artist:"Taylor Swift", year:2019 },
 ];
 
 /* =========================================================
@@ -673,7 +686,6 @@ function powerOn(){
   }
   updateNowPlaying();
   loadWeather();
-  scheduleEas();
 }
 function powerOff(){
   isPoweredOn = false;
@@ -744,13 +756,9 @@ function runSimulatedTest(){
          'concludes this test of the Emergency Alert System.'
   });
 }
-function scheduleEas(){
-  clearTimeout(easTimer);
-  easTimer = setTimeout(function tick(){
-    if(isPoweredOn) runSimulatedTest();
-    easTimer = setTimeout(tick, 12*60*1000);
-  }, 45*1000);
-}
+// Note: the simulated test alert no longer fires automatically on a timer — it only runs when
+// you press "Test EAS", or automatically if the NWS feed reports a genuine Moderate+ weather
+// alert for the Austin area (handled in loadWeather() below).
 document.getElementById('btnEas').addEventListener('click', runSimulatedTest);
 
 /* =========================================================
@@ -809,6 +817,7 @@ document.getElementById('btnPower').addEventListener('click', ()=> isPoweredOn ?
 powerScreen.addEventListener('click', powerOn);
 document.getElementById('btnPrev').addEventListener('click', ()=>{ if(isPoweredOn) prevTrack(); });
 document.getElementById('btnNext').addEventListener('click', ()=>{ if(isPoweredOn) nextTrack(); });
+document.getElementById('btnSkipAd').addEventListener('click', ()=>{ if(isPoweredOn) nextTrack(); });
 document.getElementById('btnShuffle').addEventListener('click', shuffleQueue);
 document.getElementById('btnGuide').addEventListener('click', ()=>{
   guidePanel.classList.toggle('open');
