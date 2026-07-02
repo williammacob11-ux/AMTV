@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AMTV — Austin Music Television</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#020203;
+    --crt-black:#0a0a10;
+    --phosphor:#eee7d8;
+    --magenta:#ff2f7e;
+    --cyan:#25e0ff;
+    --amber:#ffb020;
+    --eas-yellow:#ffcf1f;
+    --eas-red:#e5202b;
+    --bezel:#17151c;
+    --bezel-hi:#312d3a;
+    --font-display:'Bungee', cursive;
+    --font-mono:'VT323', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, #1a1420 0%, transparent 60%),
+      var(--bg-void);
+    color:var(--phosphor);
+    font-family:var(--font-mono);
+    font-size:19px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 12px 70px;
+    gap:16px;
+  }
+  h1,h2,h3{font-family:var(--font-display); margin:0; font-weight:400;}
+  button{font-family:var(--font-mono);}
+  a{color:var(--cyan);}
+
+  /* ---------- intro strap ---------- */
+  .strap{
+    text-align:center;
+    color:#8f8a9a;
+    letter-spacing:2px;
+    font-size:15px;
+    text-transform:uppercase;
+  }
+
+  /* ---------- TV set ---------- */
+  .tv-set{ width:min(940px, 96vw); }
+  .bezel{
+    background:linear-gradient(160deg, var(--bezel-hi), var(--bezel) 55%);
+    border-radius:20px;
+    padding:18px 18px 22px;
+    box-shadow:
+      0 40px 70px -25px rgba(0,0,0,.85),
+      inset 0 0 0 2px rgba(255,255,255,.05),
+      inset 0 -6px 14px rgba(0,0,0,.5);
+  }
+  .bezel-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:2px 8px 14px;
+    gap:10px;
+  }
+  .brand-plate{ display:flex; align-items:baseline; gap:10px; }
+  .logo{
+    font-family:var(--font-display);
+    font-size:clamp(24px,4vw,32px);
+    letter-spacing:1px;
+    position:relative;
+    color:var(--phosphor);
+    text-shadow:
+      1.5px 0 var(--magenta),
+      -1.5px 0 var(--cyan);
+  }
+  .tagline{ font-size:13px; letter-spacing:2px; color:#9c96a8; text-transform:uppercase; }
+  .set-meta{
+    font-size:15px; color:#9c96a8; letter-spacing:1px; text-align:right;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .rec-dot{
+    display:inline-block; width:8px; height:8px; border-radius:50%;
+    background:var(--eas-red); margin-right:6px;
+    animation:blink 1.4s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{opacity:.15;} }
+
+  .screen-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:8px;
+    overflow:hidden;
+    background:#000;
+    box-shadow:
+      inset 0 0 0 3px #000,
+      inset 0 0 60px rgba(0,0,0,.9);
+    cursor:pointer;
+  }
+  #player-container, #player-container iframe{
+    position:absolute; inset:0; width:100%; height:100%; border:0;
+    filter:contrast(1.1) saturate(.8) brightness(.95) blur(.35px);
+  }
+
+  .fx-layer{ position:absolute; inset:0; pointer-events:none; }
+  .fx-vignette{
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+    z-index:5;
+  }
+  .fx-scan{
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.28) 0px, rgba(0,0,0,.28) 1px,
+      transparent 2px, transparent 3px
+    );
+    mix-blend-mode:multiply;
+    z-index:6;
+    animation:scan-drift 9s linear infinite;
+  }
+  @keyframes scan-drift{ from{background-position-y:0;} to{background-position-y:300px;} }
+  .fx-bar{
+    position:absolute; left:0; right:0; height:26%;
+    background:linear-gradient(to bottom, transparent, rgba(255,255,255,.05), transparent);
+    z-index:7;
+    animation:bar-roll 11s linear infinite;
+  }
+  @keyframes bar-roll{ from{top:-30%;} to{top:110%;} }
+  .fx-grain{
+    z-index:8; opacity:.5; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    animation:grain-shift .5s steps(4) infinite;
+  }
+  @keyframes grain-shift{
+    0%{transform:translate(0,0);} 25%{transform:translate(-1%,1%);}
+    50%{transform:translate(1%,-1%);} 75%{transform:translate(-1%,-1%);} 100%{transform:translate(0,0);}
+  }
+  .fx-flicker{ z-index:9; background:#fff; opacity:0; animation:flicker 6s ease-in-out infinite; }
+  @keyframes flicker{
+    0%,97%,100%{opacity:0;} 97.5%{opacity:.04;} 98%{opacity:0;} 98.6%{opacity:.06;} 99%{opacity:0;}
+  }
+
+  canvas.fx-static{ z-index:20; opacity:0; transition:opacity .12s linear; }
+  canvas.fx-static.on{ opacity:1; }
+
+  .now-playing{
+    position:absolute; left:12px; bottom:12px; z-index:15;
+    background:rgba(6,6,10,.6);
+    border-left:3px solid var(--magenta);
+    padding:6px 12px;
+    max-width:70%;
+    transform:translateY(140%);
+    opacity:0;
+    transition:transform .35s ease, opacity .35s ease;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    line-height:1.25;
+  }
+  .now-playing.show{ transform:translateY(0); opacity:1; }
+  .now-playing .np-label{ font-size:12px; color:var(--cyan); letter-spacing:2px; }
+  .now-playing .np-title{ font-size:19px; color:var(--phosphor); }
+  .now-playing .np-sub{ font-size:14px; color:#b7b0c2; }
+
+  .channel-bug{
+    position:absolute; right:12px; bottom:12px; z-index:15;
+    font-family:var(--font-display); font-size:15px;
+    color:rgba(255,255,255,.6);
+    text-shadow:1px 0 var(--magenta), -1px 0 var(--cyan);
+    letter-spacing:1px;
+    user-select:none;
+  }
+
+  .power-screen{
+    position:absolute; inset:0; z-index:30;
+    background:#000;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:16px;
+    transition:opacity .25s ease;
+  }
+  .power-screen.hidden{ opacity:0; pointer-events:none; }
+  .power-logo{
+    font-family:var(--font-display); font-size:clamp(30px,7vw,54px);
+    color:var(--phosphor);
+    text-shadow:2px 0 var(--magenta), -2px 0 var(--cyan);
+    letter-spacing:2px;
+  }
+  .power-hint{
+    font-size:17px; letter-spacing:2px; text-transform:uppercase; color:#8f8a9a;
+    animation:blink 1.6s steps(1) infinite;
+  }
+  .power-ring{
+    width:56px;height:56px;border-radius:50%;
+    border:2px solid var(--phosphor);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .power-ring svg{ width:22px; height:22px; fill:var(--phosphor); }
+
+  .screen-wrap.crt-on .power-screen{ display:none; }
+  .screen-wrap.crt-boot{ animation:crt-boot .5s ease-out; }
+  @keyframes crt-boot{
+    0%{ filter:brightness(20) saturate(0); transform:scaleY(.01); }
+    35%{ filter:brightness(6) saturate(0); transform:scaleY(.02); }
+    60%{ filter:brightness(3); transform:scaleY(1); }
+    100%{ filter:brightness(1); transform:scaleY(1); }
+  }
+
+  /* ---------- ticker ---------- */
+  .crawl-bar{
+    margin-top:10px;
+    background:#000;
+    border-top:2px solid var(--amber);
+    border-bottom:2px solid var(--amber);
+    overflow:hidden;
+    white-space:nowrap;
+    position:relative;
+    height:32px;
+    display:flex;
+    align-items:center;
+  }
+  .crawl-track{
+    display:inline-block;
+    padding-left:100%;
+    animation:crawl 32s linear infinite;
+    font-size:18px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--amber);
+  }
+  .crawl-track b{ color:var(--phosphor); }
+  @keyframes crawl{ from{transform:translateX(0);} to{transform:translateX(-100%);} }
+
+  /* ---------- controls deck ---------- */
+  .deck{
+    width:min(940px,96vw);
+    display:flex; flex-wrap:wrap; gap:10px;
+    justify-content:center;
+    margin-top:4px;
+  }
+  .deck-btn{
+    background:linear-gradient(180deg,#312d3a,#19171f);
+    border:1px solid #000;
+    border-top:1px solid #423d4d;
+    border-radius:8px;
+    color:var(--phosphor);
+    padding:10px 14px;
+    font-size:16px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:8px;
+    cursor:pointer;
+    box-shadow:0 3px 0 #000, 0 5px 10px rgba(0,0,0,.4);
+    transition:transform .08s ease;
+  }
+  .deck-btn svg{ width:16px; height:16px; fill:currentColor; }
+  .deck-btn:hover{ color:#fff; }
+  .deck-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 #000; }
+  .deck-btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .deck-btn.alert{ border-color:var(--eas-red); color:var(--eas-yellow); }
+  .deck-btn.on{ color:var(--cyan); }
+  .vol-wrap{ display:flex; align-items:center; gap:8px; }
+  .vol-wrap input[type=range]{ accent-color:var(--cyan); }
+
+  /* ---------- guide panel ---------- */
+  .guide{
+    width:min(940px,96vw);
+    background:linear-gradient(160deg,var(--bezel-hi),var(--bezel) 60%);
+    border-radius:14px;
+    padding:14px 16px 18px;
+    display:none;
+  }
+  .guide.open{ display:block; }
+  .guide h2{ font-size:20px; letter-spacing:2px; color:var(--cyan); margin-bottom:8px; }
+  .guide ol{ list-style:none; margin:0; padding:0; max-height:340px; overflow-y:auto; }
+  .guide li{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:7px 8px; border-bottom:1px dashed rgba(255,255,255,.08);
+    cursor:pointer; font-size:17px;
+  }
+  .guide li:hover{ background:rgba(255,255,255,.05); }
+  .guide li.current{ color:var(--magenta); }
+  .guide li .g-idx{ color:#8f8a9a; width:28px; flex:none; }
+  .guide li .g-title{ flex:1; }
+  .guide li .g-year{ color:#8f8a9a; flex:none; }
+
+  /* ---------- EAS overlay ---------- */
+  .eas-overlay{
+    position:fixed; inset:0; z-index:999;
+    background:#000; color:#fff;
+    display:flex; flex-direction:column;
+    opacity:0; pointer-events:none;
+    transition:opacity .15s ease;
+  }
+  .eas-overlay.active{ opacity:1; pointer-events:auto; }
+  .eas-bar{
+    height:14px; flex:none;
+    background:repeating-linear-gradient(45deg, var(--eas-yellow) 0 22px, var(--eas-red) 22px 44px);
+  }
+  .eas-overlay.real .eas-bar{
+    background:repeating-linear-gradient(45deg, var(--eas-red) 0 22px, #7a0e14 22px 44px);
+  }
+  .eas-body{
+    flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:24px; text-align:center; gap:14px;
+  }
+  .eas-kicker{
+    font-family:var(--font-display); font-size:clamp(20px,4vw,30px);
+    letter-spacing:2px; color:var(--eas-yellow);
+    animation:blink 1s steps(1) infinite;
+  }
+  .eas-overlay.real .eas-kicker{ color:var(--eas-red); }
+  .eas-station{ font-size:18px; letter-spacing:2px; color:#aaa; text-transform:uppercase; }
+  .eas-crawl{
+    width:100%; overflow:hidden; white-space:nowrap; border-top:2px solid var(--eas-yellow);
+    border-bottom:2px solid var(--eas-yellow); padding:8px 0;
+  }
+  .eas-overlay.real .eas-crawl{ border-color:var(--eas-red); }
+  .eas-crawl span{
+    display:inline-block; padding-left:100%; font-size:22px; letter-spacing:1px;
+    animation:crawl 18s linear infinite;
+  }
+  .eas-dismiss{
+    margin-top:10px;
+    background:transparent; border:1px solid #fff; color:#fff;
+    padding:8px 16px; letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+    font-family:var(--font-mono); font-size:15px;
+  }
+  .eas-dismiss:hover{ background:#fff; color:#000; }
+
+  footer{
+    color:#5f5a6b; font-size:14px; letter-spacing:1px; text-align:center; max-width:640px;
+  }
+  footer a{ color:#8f8a9a; }
+
+  @media (prefers-reduced-motion: reduce){
+    .fx-scan, .fx-bar, .fx-grain, .fx-flicker, .crawl-track, .eas-crawl span, .rec-dot{ animation:none !important; }
+  }
+  @media (max-width:640px){
+    body{ font-size:17px; }
+    .set-meta{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="strap">You are watching</div>
+
+  <div class="tv-set">
+    <div class="bezel">
+      <div class="bezel-top">
+        <div class="brand-plate">
+          <div class="logo">AMTV</div>
+          <div class="tagline">Austin Music Television</div>
+        </div>
+        <div class="set-meta">
+          <div><span class="rec-dot"></span>ON AIR</div>
+          <div id="clockDisplay">CH 03</div>
+        </div>
+      </div>
+
+      <div class="screen-wrap" id="screenWrap">
+        <div id="player-container"></div>
+
+        <div class="fx-layer fx-grain"></div>
+        <div class="fx-layer fx-scan"></div>
+        <div class="fx-layer fx-bar"></div>
+        <div class="fx-layer fx-vignette"></div>
+        <div class="fx-layer fx-flicker"></div>
+        <canvas class="fx-static" id="staticCanvas"></canvas>
+
+        <div class="now-playing" id="nowPlaying">
+          <div class="np-label">▶ Now Playing</div>
+          <div class="np-title" id="npTitle">—</div>
+          <div class="np-sub" id="npSub">—</div>
+        </div>
+        <div class="channel-bug">AMTV</div>
+
+        <div class="power-screen" id="powerScreen">
+          <div class="power-logo">AMTV</div>
+          <div class="power-ring">
+            <svg viewBox="0 0 24 24"><path d="M11 2h2v10h-2z M12 5.5a7 7 0 1 1-4.9 2l1.4 1.4A5 5 0 1 0 12 7.5z"/></svg>
+          </div>
+          <div class="power-hint">click / tap to power on</div>
+        </div>
+      </div>
+
+      <div class="crawl-bar">
+        <div class="crawl-track" id="weatherCrawl">AMTV WEATHER CENTER — loading conditions for Round Rock, TX…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deck">
+    <button class="deck-btn" id="btnPower" title="Power">
+      <svg viewBox="0 0 24 24"><path d="M11 2h2v10h-2z M12 5.5a7 7 0 1 1-4.9 2l1.4 1.4A5 5 0 1 0 12 7.5z"/></svg>
+      Power
+    </button>
+    <button class="deck-btn" id="btnPrev" title="Previous channel">
+      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12l-10-6z"/></svg>
+      Prev
+    </button>
+    <button class="deck-btn" id="btnPlay" title="Play / Pause">
+      <svg viewBox="0 0 24 24" id="iconPlay"><path d="M8 5v14l11-7z"/></svg>
+      Play
+    </button>
+    <button class="deck-btn" id="btnNext" title="Next channel">
+      <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l10-6z"/></svg>
+      Next
+    </button>
+    <button class="deck-btn" id="btnShuffle" title="Shuffle">
+      <svg viewBox="0 0 24 24"><path d="M17 3l4 4-4 4V8h-3.6a3 3 0 0 0-2.5 1.4L7 18H3v-2h3l4-6.6A5 5 0 0 1 13.4 6H17V3zM17 21l4-4-4-4v3h-3.6a5 5 0 0 1-4.1-2.4L7 8H3V6h4a3 3 0 0 1 2.5 1.4L13 15h4v3z"/></svg>
+      Shuffle
+    </button>
+    <div class="vol-wrap deck-btn">
+      <svg viewBox="0 0 24 24" id="iconVol"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>
+      <input type="range" id="volSlider" min="0" max="100" value="70">
+    </div>
+    <button class="deck-btn" id="btnGuide" title="Program guide">
+      <svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zM4 11h16v2H4zM4 17h16v2H4z"/></svg>
+      Guide
+    </button>
+    <button class="deck-btn alert" id="btnEas" title="Test the Emergency Alert System">
+      <svg viewBox="0 0 24 24"><path d="M12 2 1 21h22z m0 6v6m0 3.2v.1"/></svg>
+      Test EAS
+    </button>
+  </div>
+
+  <div class="guide" id="guidePanel">
+    <h2>AMTV Program Guide — 40 videos in rotation</h2>
+    <ol id="guideList"></ol>
+  </div>
+
+  <div class="eas-overlay" id="easOverlay">
+    <div class="eas-bar"></div>
+    <div class="eas-body">
+      <div class="eas-kicker" id="easKicker">EMERGENCY ALERT SYSTEM</div>
+      <div class="eas-station">AMTV — Austin, Texas · Williamson &amp; Travis Counties</div>
+      <div id="easMainText" style="font-size:20px; max-width:680px; line-height:1.5;"></div>
+      <button class="eas-dismiss" id="easDismiss">Dismiss</button>
+    </div>
+    <div class="eas-crawl"><span id="easCrawlText">THIS IS A TEST.</span></div>
+  </div>
+
+  <footer>
+    AMTV is a fan-made retro broadcast simulator. Music videos are streamed directly from YouTube via
+    the official IFrame Player API — nothing is hosted or redistributed here. Weather data via the
+    National Weather Service (api.weather.gov).
+  </footer>
+
+<script>
+/* =========================================================
+   AMTV — playlist data
+   ========================================================= */
+const PLAYLIST = [
+  { id:"qnkuBUAwfe0", title:"One Last Breath", artist:"Creed", year:2001 },
+  { id:"7YvAYIJSSZY", title:"Somebody's Watching Me", artist:"Rockwell", year:1984 },
+  { id:"eH3giaIzONA", title:"I Wanna Dance With Somebody (Who Loves Me)", artist:"Whitney Houston", year:1987 },
+  { id:"djV11Xbc914", title:"Take On Me", artist:"a-ha", year:1985 },
+  { id:"qYkbTyHXwbs", title:"Jessie's Girl", artist:"Rick Springfield", year:1981 },
+  { id:"Zbp5UuCz2kk", title:"Magic Dance", artist:"David Bowie (Labyrinth)", year:1986 },
+  { id:"IGVZOLV9SPo", title:"Love Is a Battlefield", artist:"Pat Benatar", year:1983 },
+  { id:"XZVpR3Pk-r8", title:"Tainted Love", artist:"Soft Cell", year:1981 },
+  { id:"TvnYmWpD_T8", title:"Purple Rain", artist:"Prince", year:1984 },
+  { id:"oRdxUFDoQe0", title:"Beat It", artist:"Michael Jackson", year:1983 },
+  { id:"uPudE8nDog0", title:"Don't You Want Me", artist:"The Human League", year:1981 },
+  { id:"lcOxhH8N3Bo", title:"Total Eclipse of the Heart", artist:"Bonnie Tyler", year:1983 },
+  { id:"btPJPFnesV4", title:"Eye of the Tiger", artist:"Survivor", year:1982 },
+  { id:"ltrMfT4Qz5Y", title:"Footloose", artist:"Kenny Loggins", year:1984 },
+  { id:"PIb6AZdTr-A", title:"Girls Just Want to Have Fun", artist:"Cyndi Lauper", year:1983 },
+  { id:"KOok1WzZbOY", title:"California Dreamin'", artist:"The Mamas & the Papas", year:1965 },
+  { id:"hTWKbfoikeg", title:"Smells Like Teen Spirit", artist:"Nirvana", year:1991 },
+  { id:"w6Q3mHyzn78", title:"I Think We're Alone Now", artist:"Tiffany", year:1987 },
+  { id:"PaKr9gWqwl4", title:"Only Love Can Hurt Like This", artist:"Paloma Faith", year:2014 },
+  { id:"K0siYUjV9UM", title:"Mama, I'm Coming Home", artist:"Ozzy Osbourne", year:1991 },
+  { id:"mwgg1Pu6cNg", title:"Gypsy", artist:"Fleetwood Mac", year:1982 },
+  { id:"YF1R0hc5Q2I", title:"Everywhere", artist:"Fleetwood Mac", year:1987 },
+  { id:"ozl3L9fhKtE", title:"Go Your Own Way", artist:"Fleetwood Mac", year:1977 },
+  { id:"Y3ywicffOj4", title:"Dreams", artist:"Fleetwood Mac", year:1977 },
+  { id:"Eo-KmOd3i7s", title:"Bye Bye Bye", artist:"*NSYNC", year:2000 },
+  { id:"_ovdm2yX4MA", title:"Levels (Radio Edit)", artist:"Avicii", year:2011 },
+  { id:"FM7MFYoylVs", title:"Something Just Like This", artist:"The Chainsmokers & Coldplay", year:2017 },
+  { id:"NdYWuo9OFAw", title:"Iris", artist:"Goo Goo Dolls", year:1998 },
+  { id:"K38xNqZvBJI", title:"1985", artist:"Bowling For Soup", year:2004 },
+  { id:"oNjQXmoxiQ8", title:"Forever Young", artist:"Alphaville", year:1984 },
+  { id:"0vcjJKNq9EM", title:"Boy", artist:"Book of Love", year:1985 },
+  { id:"ekr2nIex040", title:"APT.", artist:"ROSÉ & Bruno Mars", year:2024 },
+  { id:"Zi_XLOBDo_Y", title:"Billie Jean", artist:"Michael Jackson", year:1983 },
+  { id:"sOnqjkJTMaA", title:"Thriller", artist:"Michael Jackson", year:1983 },
+  { id:"F2AitTPI5U0", title:"Black or White", artist:"Michael Jackson", year:1991 },
+  { id:"XAi3VTSdTxU", title:"Earth Song", artist:"Michael Jackson", year:1995 },
+  { id:"QNJL6nfu__Q", title:"They Don't Care About Us (Brazil Version)", artist:"Michael Jackson", year:1996 },
+  { id:"h_D3VFfhvs4", title:"Smooth Criminal", artist:"Michael Jackson", year:1988 },
+  { id:"JmcA9LIIXWw", title:"Karma Chameleon", artist:"Culture Club", year:1983 },
+  { id:"vNoKguSdy4Y", title:"I Knew You Were Trouble", artist:"Taylor Swift", year:2012 },
+];
+
+/* =========================================================
+   State
+   ========================================================= */
+let queue = PLAYLIST.map((_, i) => i);
+let qPos = 0;
+let player = null;
+let playerReady = false;
+let isPoweredOn = false;
+let isShuffled = false;
+let easTimer = null;
+let seenAlertIds = new Set();
+
+/* =========================================================
+   DOM refs
+   ========================================================= */
+const screenWrap   = document.getElementById('screenWrap');
+const powerScreen  = document.getElementById('powerScreen');
+const nowPlaying   = document.getElementById('nowPlaying');
+const npTitle      = document.getElementById('npTitle');
+const npSub        = document.getElementById('npSub');
+const staticCanvas = document.getElementById('staticCanvas');
+const guidePanel   = document.getElementById('guidePanel');
+const guideList    = document.getElementById('guideList');
+const weatherCrawl = document.getElementById('weatherCrawl');
+const easOverlay   = document.getElementById('easOverlay');
+const easKicker    = document.getElementById('easKicker');
+const easMainText  = document.getElementById('easMainText');
+const easCrawlText = document.getElementById('easCrawlText');
+const iconPlay     = document.getElementById('iconPlay');
+const volSlider    = document.getElementById('volSlider');
+
+/* =========================================================
+   Static / channel-change noise burst
+   ========================================================= */
+const sctx = staticCanvas.getContext('2d');
+function sizeCanvas(){
+  staticCanvas.width = screenWrap.clientWidth;
+  staticCanvas.height = screenWrap.clientHeight;
+}
+window.addEventListener('resize', sizeCanvas);
+
+let staticRAF = null;
+function drawStaticFrame(){
+  const w = staticCanvas.width, h = staticCanvas.height;
+  const img = sctx.createImageData(w, h);
+  for(let i=0;i<img.data.length;i+=4){
+    const v = Math.random()*255;
+    img.data[i]=v; img.data[i+1]=v; img.data[i+2]=v; img.data[i+3]=255;
+  }
+  sctx.putImageData(img,0,0);
+  staticRAF = requestAnimationFrame(drawStaticFrame);
+}
+function burstStatic(ms=420){
+  sizeCanvas();
+  staticCanvas.classList.add('on');
+  drawStaticFrame();
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      cancelAnimationFrame(staticRAF);
+      staticCanvas.classList.remove('on');
+      resolve();
+    }, ms);
+  });
+}
+
+/* =========================================================
+   YouTube IFrame API
+   ========================================================= */
+function loadYouTubeAPI(){
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+}
+window.onYouTubeIframeAPIReady = function(){
+  player = new YT.Player('player-container', {
+    height:'100%', width:'100%',
+    videoId: PLAYLIST[queue[qPos]].id,
+    playerVars:{
+      autoplay:0, controls:0, disablekb:1, fs:0,
+      iv_load_policy:3, modestbranding:1, playsinline:1, rel:0
+    },
+    events:{
+      onReady: ()=>{ playerReady = true; player.setVolume(Number(volSlider.value)); },
+      onStateChange: onPlayerStateChange,
+      onError: onPlayerError
+    }
+  });
+};
+loadYouTubeAPI();
+
+function onPlayerStateChange(e){
+  if(e.data === YT.PlayerState.ENDED){ nextTrack(); }
+  if(e.data === YT.PlayerState.PLAYING){ iconPlay.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'; }
+  if(e.data === YT.PlayerState.PAUSED){ iconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>'; }
+}
+function onPlayerError(e){
+  console.warn('AMTV: signal lost on video', PLAYLIST[queue[qPos]].id, 'code', e.data);
+  flashMessage('SIGNAL LOST — CHANGING CHANNEL');
+  nextTrack();
+}
+
+function flashMessage(text){
+  npTitle.textContent = text;
+  npSub.textContent = '';
+  nowPlaying.classList.add('show');
+  setTimeout(()=> updateNowPlaying(), 1600);
+}
+
+/* =========================================================
+   Playback control
+   ========================================================= */
+function currentTrack(){ return PLAYLIST[queue[qPos]]; }
+
+function updateNowPlaying(){
+  const t = currentTrack();
+  npTitle.textContent = t.title;
+  npSub.textContent = `${t.artist} · ${t.year}`;
+  nowPlaying.classList.add('show');
+  clearTimeout(updateNowPlaying._hideTimer);
+  updateNowPlaying._hideTimer = setTimeout(()=> nowPlaying.classList.remove('show'), 6000);
+  renderGuide();
+}
+
+async function playIndexInQueue(newPos){
+  qPos = ((newPos % queue.length) + queue.length) % queue.length;
+  await burstStatic();
+  if(playerReady){
+    player.loadVideoById(currentTrack().id);
+    player.playVideo();
+  }
+  updateNowPlaying();
+}
+function nextTrack(){ playIndexInQueue(qPos+1); }
+function prevTrack(){ playIndexInQueue(qPos-1); }
+
+function shuffleQueue(){
+  const current = queue[qPos];
+  const arr = PLAYLIST.map((_,i)=>i);
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  queue = arr;
+  qPos = queue.indexOf(current);
+  isShuffled = true;
+  document.getElementById('btnShuffle').classList.add('on');
+}
+
+/* =========================================================
+   Power on/off
+   ========================================================= */
+function powerOn(){
+  if(isPoweredOn) return;
+  isPoweredOn = true;
+  screenWrap.classList.add('crt-boot');
+  powerScreen.classList.add('hidden');
+  setTimeout(()=> screenWrap.classList.remove('crt-boot'), 550);
+  if(playerReady){
+    player.loadVideoById(currentTrack().id);
+    player.playVideo();
+    player.unMute();
+  } else {
+    // player still loading — try again shortly
+    const waitReady = setInterval(()=>{
+      if(playerReady){
+        clearInterval(waitReady);
+        player.loadVideoById(currentTrack().id);
+        player.playVideo();
+        player.unMute();
+      }
+    }, 200);
+  }
+  updateNowPlaying();
+  loadWeather();
+  scheduleEas();
+}
+function powerOff(){
+  isPoweredOn = false;
+  powerScreen.classList.remove('hidden');
+  if(playerReady) player.pauseVideo();
+  clearTimeout(easTimer);
+}
+
+/* =========================================================
+   Guide panel
+   ========================================================= */
+function renderGuide(){
+  guideList.innerHTML = '';
+  queue.forEach((trackIdx, pos)=>{
+    const t = PLAYLIST[trackIdx];
+    const li = document.createElement('li');
+    li.className = pos === qPos ? 'current' : '';
+    li.innerHTML = `<span class="g-idx">${String(pos+1).padStart(2,'0')}</span>
+                     <span class="g-title">${t.title} — ${t.artist}</span>
+                     <span class="g-year">${t.year}</span>`;
+    li.addEventListener('click', ()=>{ if(!isPoweredOn) powerOn(); playIndexInQueue(pos); });
+    guideList.appendChild(li);
+  });
+}
+
+/* =========================================================
+   EAS — simulated + real NWS alerts
+   ========================================================= */
+function synthAttentionTone(durationSec=3){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.18;
+    gain.connect(ctx.destination);
+    [853, 960].forEach(freq=>{
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      osc.start();
+      osc.stop(ctx.currentTime + durationSec);
+    });
+    setTimeout(()=> ctx.close(), (durationSec+0.3)*1000);
+  }catch(err){ console.warn('AMTV: audio context unavailable', err); }
+}
+
+function showEas({ real=false, headline, body, sound=true } = {}){
+  easOverlay.classList.toggle('real', real);
+  easKicker.textContent = real ? 'EMERGENCY ALERT' : 'EMERGENCY ALERT SYSTEM TEST';
+  easMainText.textContent = body;
+  easCrawlText.textContent = headline;
+  easOverlay.classList.add('active');
+  if(sound) synthAttentionTone(real ? 4 : 2.5);
+  clearTimeout(showEas._autoHide);
+  showEas._autoHide = setTimeout(hideEas, 14000);
+}
+function hideEas(){ easOverlay.classList.remove('active'); }
+document.getElementById('easDismiss').addEventListener('click', hideEas);
+
+function runSimulatedTest(){
+  showEas({
+    real:false,
+    headline:'THIS IS A TEST. THIS IS ONLY A TEST OF THE EMERGENCY ALERT SYSTEM.',
+    body:'This is a test of the Emergency Alert System, broadcast on AMTV covering Round Rock, ' +
+         'Cedar Park, Leander, and the greater Austin, Texas area. Broadcasters in this area have ' +
+         'developed this system to keep you informed in the event of an emergency. If this had ' +
+         'been an actual emergency, official information would have followed the tone alert. This ' +
+         'concludes this test of the Emergency Alert System.'
+  });
+}
+function scheduleEas(){
+  clearTimeout(easTimer);
+  easTimer = setTimeout(function tick(){
+    if(isPoweredOn) runSimulatedTest();
+    easTimer = setTimeout(tick, 12*60*1000);
+  }, 45*1000);
+}
+document.getElementById('btnEas').addEventListener('click', runSimulatedTest);
+
+/* =========================================================
+   Weather — National Weather Service (api.weather.gov)
+   Round Rock, TX approx. coordinates
+   ========================================================= */
+const WX_LAT = 30.5083, WX_LON = -97.6789;
+
+async function loadWeather(){
+  try{
+    const pointRes = await fetch(`https://api.weather.gov/points/${WX_LAT},${WX_LON}`);
+    const pointData = await pointRes.json();
+    const forecastRes = await fetch(pointData.properties.forecast);
+    const forecastData = await forecastRes.json();
+    const now = forecastData.properties.periods[0];
+
+    const alertsRes = await fetch(`https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`);
+    const alertsData = await alertsRes.json();
+    const alerts = alertsData.features || [];
+
+    let crawl = `AMTV WEATHER CENTER — ROUND ROCK / AUSTIN, TX — <b>${now.name.toUpperCase()}:</b> ` +
+                `${now.temperature}°${now.temperatureUnit}, ${now.shortForecast}.`;
+
+    if(alerts.length){
+      crawl += '  ⚠ ' + alerts.map(a => a.properties.event.toUpperCase() + ' IN EFFECT').join('   •   ');
+    } else {
+      crawl += '  No active weather alerts for the Austin metro area.';
+    }
+    weatherCrawl.innerHTML = crawl + '   \u00A0\u00A0\u00A0\u00A0—\u00A0\u00A0\u00A0\u00A0   ' + crawl;
+
+    alerts.forEach(a=>{
+      const id = a.id || a.properties.id;
+      const sev = a.properties.severity;
+      if(!seenAlertIds.has(id) && (sev === 'Severe' || sev === 'Extreme' || sev === 'Moderate')){
+        seenAlertIds.add(id);
+        if(isPoweredOn){
+          showEas({
+            real:true,
+            headline:(a.properties.headline || a.properties.event).toUpperCase(),
+            body:(a.properties.description || a.properties.headline || '').slice(0,600)
+          });
+        }
+      }
+    });
+  }catch(err){
+    console.warn('AMTV: weather fetch failed', err);
+    weatherCrawl.textContent = 'AMTV WEATHER CENTER — live conditions unavailable right now — check back shortly.';
+  }
+}
+setInterval(()=>{ if(isPoweredOn) loadWeather(); }, 15*60*1000);
+
+/* =========================================================
+   Wire up controls
+   ========================================================= */
+document.getElementById('btnPower').addEventListener('click', ()=> isPoweredOn ? powerOff() : powerOn());
+powerScreen.addEventListener('click', powerOn);
+document.getElementById('btnPrev').addEventListener('click', ()=>{ if(isPoweredOn) prevTrack(); });
+document.getElementById('btnNext').addEventListener('click', ()=>{ if(isPoweredOn) nextTrack(); });
+document.getElementById('btnShuffle').addEventListener('click', shuffleQueue);
+document.getElementById('btnGuide').addEventListener('click', ()=>{
+  guidePanel.classList.toggle('open');
+  renderGuide();
+});
+document.getElementById('btnPlay').addEventListener('click', ()=>{
+  if(!isPoweredOn){ powerOn(); return; }
+  if(!playerReady) return;
+  const state = player.getPlayerState();
+  if(state === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
+});
+volSlider.addEventListener('input', ()=>{
+  if(playerReady) player.setVolume(Number(volSlider.value));
+});
+
+/* initial static burst on the "off" power screen for atmosphere */
+sizeCanvas();
+staticCanvas.classList.add('on');
+sctx.globalAlpha = 0.5;
+drawStaticFrame();
+setTimeout(()=>{ cancelAnimationFrame(staticRAF); staticCanvas.classList.remove('on'); sctx.globalAlpha = 1; }, 900);
+
+renderGuide();
+</script>
+</body>
+</html>
