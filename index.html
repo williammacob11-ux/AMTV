@@ -145,6 +145,28 @@
   @keyframes flicker{
     0%,97%,100%{opacity:0;} 97.5%{opacity:.04;} 98%{opacity:0;} 98.6%{opacity:.06;} 99%{opacity:0;}
   }
+  .fx-tracking{
+    height:22px; top:-30px;
+    background:linear-gradient(to bottom, transparent, rgba(255,255,255,.55), transparent);
+    mix-blend-mode:screen;
+    opacity:0;
+    z-index:12;
+  }
+  .fx-tracking.glitching{ animation:tracking-sweep .55s linear; }
+  @keyframes tracking-sweep{
+    0%{ top:-30px; opacity:0; }
+    8%{ opacity:.85; }
+    92%{ opacity:.85; }
+    100%{ top:104%; opacity:0; }
+  }
+  .screen-wrap.jitter #player-container{ animation:jitter-shift .4s steps(3); }
+  @keyframes jitter-shift{
+    0%{ transform:translate(0,0); }
+    30%{ transform:translate(-3px,1px); }
+    55%{ transform:translate(2px,-1px); }
+    80%{ transform:translate(-2px,0); }
+    100%{ transform:translate(0,0); }
+  }
 
   canvas.fx-static{
     position:absolute; inset:0; width:100%; height:100%;
@@ -375,6 +397,7 @@
         <div class="fx-layer fx-grain"></div>
         <div class="fx-layer fx-scan"></div>
         <div class="fx-layer fx-bar"></div>
+        <div class="fx-layer fx-tracking" id="trackingGlitch"></div>
         <div class="fx-layer fx-vignette"></div>
         <div class="fx-layer fx-flicker"></div>
         <canvas class="fx-static" id="staticCanvas"></canvas>
@@ -441,7 +464,7 @@
   </div>
 
   <div class="guide" id="guidePanel">
-    <h2>AMTV Program Guide — 40 videos in rotation</h2>
+    <h2 id="guideHeading">AMTV Program Guide</h2>
     <ol id="guideList"></ol>
   </div>
 
@@ -466,6 +489,11 @@
 /* =========================================================
    AMTV — playlist data
    ========================================================= */
+const OFFLINE_VIDEO_ID = "q7UMI2yUrao";   // plays on loop 12am–6am
+const NEWS_VIDEO_ID    = "iipR5yUp36o";   // ABC News Live 24/7 stream, plays 6–7am
+// NOTE: NEWS_VIDEO_ID points to a persistent live stream. If ABC ever rotates
+// the stream to a new video ID, just swap the value above.
+
 const PLAYLIST = [
   { id:"qnkuBUAwfe0", title:"One Last Breath", artist:"Creed", year:2001 },
   { id:"7YvAYIJSSZY", title:"Somebody's Watching Me", artist:"Rockwell", year:1984 },
@@ -510,6 +538,19 @@ const PLAYLIST = [
   { id:"JmcA9LIIXWw", title:"Karma Chameleon", artist:"Culture Club", year:1983 },
   { id:"vNoKguSdy4Y", title:"I Knew You Were Trouble", artist:"Taylor Swift", year:2012 },
   { id:"-BjZmE2gtdo", title:"Lover", artist:"Taylor Swift", year:2019 },
+  { id:"6M6samPEMpM", title:"Everybody (Backstreet's Back)", artist:"Backstreet Boys", year:1997 },
+  { id:"E4c7EE8_IX0", title:"Africa (Toto Cover)", artist:"Weezer", year:2018 },
+  { id:"hDU4GB1PTxc", title:"I Knew It, I Knew You", artist:"Taylor Swift", year:2026 },
+  { id:"Gw7gNf_9njs", title:"Goodbye Earl", artist:"The Chicks", year:2000 },
+  { id:"Qt2mbGP6vFI", title:"Another Day in Paradise", artist:"Phil Collins", year:1989 },
+  { id:"WrMGGouem3c", title:"Suspicious Minds", artist:"Elvis Presley", year:1969 },
+  { id:"9jK-NcRmVcw", title:"The Final Countdown", artist:"Europe", year:1986 },
+  { id:"psuRGfAaju4", title:"Fireflies", artist:"Owl City", year:2009 },
+  { id:"cjVQ36NhbMk", title:"How to Save a Life", artist:"The Fray", year:2005 },
+  { id:"y2bVIBwpCTA", title:"I Want You Back", artist:"The Jackson 5", year:1969 },
+  { id:"qM1YMeDsc-M", title:"When Can I See You Again?", artist:"Owl City", year:2012 },
+  { id:"s1tAYmMjLdY", title:"I Miss You", artist:"Blink-182", year:2003 },
+  { id:"1OxOHtD0RDw", title:"I Just Wanna Shine", artist:"Fitz and the Tantrums", year:2019 },
 ];
 
 /* =========================================================
@@ -520,9 +561,11 @@ let qPos = 0;
 let player = null;
 let playerReady = false;
 let isPoweredOn = false;
-let isShuffled = false;
+let isShuffled = true;
 let easTimer = null;
 let seenAlertIds = new Set();
+let programMode = 'music';        // 'music' | 'news' | 'offline'
+let awaitingOfflineSwitch = false;
 
 /* =========================================================
    DOM refs
@@ -594,7 +637,11 @@ window.onYouTubeIframeAPIReady = function(){
       iv_load_policy:3, modestbranding:1, playsinline:1, rel:0
     },
     events:{
-      onReady: ()=>{ playerReady = true; player.setVolume(Number(volSlider.value)); },
+      onReady: ()=>{
+        playerReady = true;
+        player.setVolume(Number(volSlider.value));
+        setLowQuality();
+      },
       onStateChange: onPlayerStateChange,
       onError: onPlayerError
     }
@@ -602,15 +649,44 @@ window.onYouTubeIframeAPIReady = function(){
 };
 loadYouTubeAPI();
 
+// Best-effort 480p cap. YouTube treats this as a suggestion, not a hard
+// guarantee, but it's the closest thing the IFrame API exposes.
+function setLowQuality(){
+  try{ player.setPlaybackQuality('large'); }catch(err){}
+}
+function loadVideo(id){
+  if(!playerReady) return;
+  player.loadVideoById(id);
+  setLowQuality();
+}
+
 function onPlayerStateChange(e){
-  if(e.data === YT.PlayerState.ENDED){ nextTrack(); }
-  if(e.data === YT.PlayerState.PLAYING){ iconPlay.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'; }
+  if(e.data === YT.PlayerState.ENDED){
+    if(programMode === 'music' && awaitingOfflineSwitch){
+      awaitingOfflineSwitch = false;
+      enterOffline();
+    } else if(programMode === 'music'){
+      nextTrack();
+    } else if(programMode === 'offline'){
+      loadVideo(OFFLINE_VIDEO_ID);
+      player.playVideo();
+    } else if(programMode === 'news'){
+      loadVideo(NEWS_VIDEO_ID);
+      player.playVideo();
+    }
+  }
+  if(e.data === YT.PlayerState.PLAYING){
+    iconPlay.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    setLowQuality();
+  }
   if(e.data === YT.PlayerState.PAUSED){ iconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>'; }
 }
 function onPlayerError(e){
-  console.warn('AMTV: signal lost on video', PLAYLIST[queue[qPos]].id, 'code', e.data);
-  flashMessage('SIGNAL LOST — CHANGING CHANNEL');
-  nextTrack();
+  console.warn('AMTV: signal lost on video', 'code', e.data);
+  if(programMode === 'music'){
+    flashMessage('SIGNAL LOST — CHANGING CHANNEL');
+    nextTrack();
+  }
 }
 
 function flashMessage(text){
@@ -626,6 +702,7 @@ function flashMessage(text){
 function currentTrack(){ return PLAYLIST[queue[qPos]]; }
 
 function updateNowPlaying(){
+  if(programMode !== 'music'){ return; }
   const t = currentTrack();
   npTitle.textContent = t.title;
   npSub.textContent = `${t.artist} · ${t.year}`;
@@ -638,16 +715,14 @@ function updateNowPlaying(){
 async function playIndexInQueue(newPos){
   qPos = ((newPos % queue.length) + queue.length) % queue.length;
   await burstStatic();
-  if(playerReady){
-    player.loadVideoById(currentTrack().id);
-    player.playVideo();
-  }
+  loadVideo(currentTrack().id);
+  if(playerReady) player.playVideo();
   updateNowPlaying();
 }
 function nextTrack(){ playIndexInQueue(qPos+1); }
 function prevTrack(){ playIndexInQueue(qPos-1); }
 
-function shuffleQueue(){
+function shuffleQueue(keepCurrent=true){
   const current = queue[qPos];
   const arr = PLAYLIST.map((_,i)=>i);
   for(let i=arr.length-1;i>0;i--){
@@ -655,10 +730,71 @@ function shuffleQueue(){
     [arr[i],arr[j]] = [arr[j],arr[i]];
   }
   queue = arr;
-  qPos = queue.indexOf(current);
+  qPos = keepCurrent ? queue.indexOf(current) : 0;
   isShuffled = true;
   document.getElementById('btnShuffle').classList.add('on');
 }
+
+/* =========================================================
+   Program schedule — Austin/Central time
+   AMTV is off the air 12am–6am, national news 6–7am, music the rest of the day.
+   ========================================================= */
+function getAustinHour(){
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone:'America/Chicago', hour:'2-digit', hour12:false
+  }).formatToParts(new Date());
+  let h = parseInt(parts.find(p=>p.type==='hour').value, 10);
+  if(h === 24) h = 0;
+  return h;
+}
+function getProgramState(){
+  const h = getAustinHour();
+  if(h < 6) return 'offline';
+  if(h < 7) return 'news';
+  return 'music';
+}
+
+function enterMusic(reshuffle=true){
+  programMode = 'music';
+  awaitingOfflineSwitch = false;
+  if(reshuffle) shuffleQueue(false);
+  loadVideo(currentTrack().id);
+  if(playerReady) player.playVideo();
+  updateNowPlaying();
+}
+function enterNews(){
+  programMode = 'news';
+  loadVideo(NEWS_VIDEO_ID);
+  if(playerReady) player.playVideo();
+  npTitle.textContent = 'AMTV MORNING NEWS';
+  npSub.textContent = 'National headlines · 6–7 AM';
+  nowPlaying.classList.add('show');
+  renderGuide();
+}
+function enterOffline(){
+  programMode = 'offline';
+  loadVideo(OFFLINE_VIDEO_ID);
+  if(playerReady) player.playVideo();
+  npTitle.textContent = 'AMTV IS OFF THE AIR';
+  npSub.textContent = 'Regular programming resumes at 6:00 AM Central';
+  nowPlaying.classList.add('show');
+  renderGuide();
+}
+
+function checkSchedule(){
+  if(!isPoweredOn) return;
+  const wanted = getProgramState();
+  if(wanted === programMode) return;
+  if(wanted === 'offline' && programMode === 'music'){
+    // let the current video finish before signing off, per request
+    awaitingOfflineSwitch = true;
+    return;
+  }
+  if(wanted === 'offline') enterOffline();
+  else if(wanted === 'news') enterNews();
+  else enterMusic();
+}
+setInterval(checkSchedule, 30*1000);
 
 /* =========================================================
    Power on/off
@@ -669,44 +805,54 @@ function powerOn(){
   screenWrap.classList.add('crt-boot');
   powerScreen.classList.add('hidden');
   setTimeout(()=> screenWrap.classList.remove('crt-boot'), 550);
-  if(playerReady){
-    player.loadVideoById(currentTrack().id);
-    player.playVideo();
+
+  const launch = ()=>{
+    const startMode = getProgramState();
+    if(startMode === 'offline') enterOffline();
+    else if(startMode === 'news') enterNews();
+    else enterMusic(true);
     player.unMute();
+  };
+  if(playerReady){
+    launch();
   } else {
     // player still loading — try again shortly
     const waitReady = setInterval(()=>{
-      if(playerReady){
-        clearInterval(waitReady);
-        player.loadVideoById(currentTrack().id);
-        player.playVideo();
-        player.unMute();
-      }
+      if(playerReady){ clearInterval(waitReady); launch(); }
     }, 200);
   }
-  updateNowPlaying();
   loadWeather();
 }
 function powerOff(){
   isPoweredOn = false;
   powerScreen.classList.remove('hidden');
   if(playerReady) player.pauseVideo();
-  clearTimeout(easTimer);
 }
 
 /* =========================================================
-   Guide panel
+   Guide panel — sorted alphabetically by artist
    ========================================================= */
 function renderGuide(){
   guideList.innerHTML = '';
-  queue.forEach((trackIdx, pos)=>{
-    const t = PLAYLIST[trackIdx];
+  const heading = document.getElementById('guideHeading');
+  if(heading) heading.textContent = `AMTV Program Guide — ${PLAYLIST.length} videos in rotation (A–Z by artist)`;
+
+  const sorted = PLAYLIST
+    .map((t, idx) => ({ ...t, idx }))
+    .sort((a, b) => a.artist.localeCompare(b.artist) || a.title.localeCompare(b.title));
+
+  sorted.forEach(t=>{
     const li = document.createElement('li');
-    li.className = pos === qPos ? 'current' : '';
-    li.innerHTML = `<span class="g-idx">${String(pos+1).padStart(2,'0')}</span>
-                     <span class="g-title">${t.title} — ${t.artist}</span>
-                     <span class="g-year">${t.year}</span>`;
-    li.addEventListener('click', ()=>{ if(!isPoweredOn) powerOn(); playIndexInQueue(pos); });
+    const isCurrent = programMode === 'music' && queue[qPos] === t.idx;
+    li.className = isCurrent ? 'current' : '';
+    li.innerHTML = `<span class="g-idx">${t.year}</span>
+                     <span class="g-title">${t.artist} — ${t.title}</span>
+                     <span class="g-year"></span>`;
+    li.addEventListener('click', ()=>{
+      if(!isPoweredOn) powerOn();
+      const pos = queue.indexOf(t.idx);
+      playIndexInQueue(pos);
+    });
     guideList.appendChild(li);
   });
 }
@@ -815,10 +961,10 @@ setInterval(()=>{ if(isPoweredOn) loadWeather(); }, 15*60*1000);
    ========================================================= */
 document.getElementById('btnPower').addEventListener('click', ()=> isPoweredOn ? powerOff() : powerOn());
 powerScreen.addEventListener('click', powerOn);
-document.getElementById('btnPrev').addEventListener('click', ()=>{ if(isPoweredOn) prevTrack(); });
-document.getElementById('btnNext').addEventListener('click', ()=>{ if(isPoweredOn) nextTrack(); });
-document.getElementById('btnSkipAd').addEventListener('click', ()=>{ if(isPoweredOn) nextTrack(); });
-document.getElementById('btnShuffle').addEventListener('click', shuffleQueue);
+document.getElementById('btnPrev').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') prevTrack(); });
+document.getElementById('btnNext').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') nextTrack(); });
+document.getElementById('btnSkipAd').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') nextTrack(); });
+document.getElementById('btnShuffle').addEventListener('click', ()=>{ if(programMode==='music') shuffleQueue(); });
 document.getElementById('btnGuide').addEventListener('click', ()=>{
   guidePanel.classList.toggle('open');
   renderGuide();
@@ -840,7 +986,28 @@ sctx.globalAlpha = 0.5;
 drawStaticFrame();
 setTimeout(()=>{ cancelAnimationFrame(staticRAF); staticCanvas.classList.remove('on'); sctx.globalAlpha = 1; }, 900);
 
+/* =========================================================
+   Occasional VHS tracking glitch — purely cosmetic authenticity touch
+   ========================================================= */
+const trackingEl = document.getElementById('trackingGlitch');
+function scheduleTrackingGlitch(){
+  const delay = 18000 + Math.random()*27000; // every ~18-45s
+  setTimeout(()=>{
+    if(isPoweredOn){
+      trackingEl.classList.add('glitching');
+      screenWrap.classList.add('jitter');
+      setTimeout(()=>{
+        trackingEl.classList.remove('glitching');
+        screenWrap.classList.remove('jitter');
+      }, 550);
+    }
+    scheduleTrackingGlitch();
+  }, delay);
+}
+scheduleTrackingGlitch();
+
 renderGuide();
 </script>
+
 </body>
 </html>
