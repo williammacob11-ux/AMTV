@@ -304,17 +304,32 @@
   }
   .guide.open{ display:block; }
   .guide h2{ font-size:20px; letter-spacing:2px; color:var(--cyan); margin-bottom:8px; }
-  .guide ol{ list-style:none; margin:0; padding:0; max-height:340px; overflow-y:auto; }
-  .guide li{
-    display:flex; justify-content:space-between; gap:10px;
-    padding:7px 8px; border-bottom:1px dashed rgba(255,255,255,.08);
-    cursor:pointer; font-size:17px;
+  .guide-list{ max-height:420px; overflow-y:auto; }
+  .artist-card{ border-bottom:1px dashed rgba(255,255,255,.08); }
+  .artist-row{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 6px; cursor:pointer;
   }
-  .guide li:hover{ background:rgba(255,255,255,.05); }
-  .guide li.current{ color:var(--magenta); }
-  .guide li .g-idx{ color:#8f8a9a; width:28px; flex:none; }
-  .guide li .g-title{ flex:1; }
-  .guide li .g-year{ color:#8f8a9a; flex:none; }
+  .artist-row:hover{ background:rgba(255,255,255,.05); }
+  .artist-avatar{
+    width:38px; height:38px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-size:14px; color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  .artist-name{ flex:1; font-size:19px; letter-spacing:.5px; }
+  .artist-count{ color:#8f8a9a; font-size:14px; flex:none; }
+  .artist-chevron{ flex:none; color:#8f8a9a; transition:transform .2s ease; }
+  .artist-card.open .artist-chevron{ transform:rotate(90deg); color:var(--cyan); }
+  .artist-songs{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
+  .artist-card.open .artist-songs{ max-height:800px; }
+  .artist-song-row{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:7px 8px 7px 58px; font-size:16px; cursor:pointer;
+  }
+  .artist-song-row:hover{ background:rgba(255,255,255,.05); }
+  .artist-song-row.current{ color:var(--magenta); }
+  .artist-song-row .as-year{ color:#8f8a9a; flex:none; }
 
   /* ---------- EAS overlay ---------- */
   .eas-overlay{
@@ -465,7 +480,7 @@
 
   <div class="guide" id="guidePanel">
     <h2 id="guideHeading">AMTV Program Guide</h2>
-    <ol id="guideList"></ol>
+    <div class="guide-list" id="guideList"></div>
   </div>
 
   <div class="eas-overlay" id="easOverlay">
@@ -551,6 +566,37 @@ const PLAYLIST = [
   { id:"qM1YMeDsc-M", title:"When Can I See You Again?", artist:"Owl City", year:2012 },
   { id:"s1tAYmMjLdY", title:"I Miss You", artist:"Blink-182", year:2003 },
   { id:"1OxOHtD0RDw", title:"I Just Wanna Shine", artist:"Fitz and the Tantrums", year:2019 },
+  { id:"GjgoKqXd0QI", title:"ABC", artist:"The Jackson 5", year:1970 },
+  { id:"PivWY9wn5ps", title:"Man in the Mirror", artist:"Michael Jackson", year:1988 },
+  { id:"yUi_S6YWjZw", title:"Dirty Diana", artist:"Michael Jackson", year:1988 },
+  { id:"YNzuiRuQNYY", title:"Human Nature", artist:"Michael Jackson", year:1983 },
+  { id:"bWcASV2sey0", title:"Holding Out for a Hero", artist:"Bonnie Tyler", year:1984 },
+  { id:"kBYHwH1Vb-c", title:"The Chain", artist:"Fleetwood Mac", year:1977 },
+  { id:"92cwKCU8Z5c", title:"The Winner Takes It All", artist:"ABBA", year:1980 },
+  { id:"dQsjAbZDx-4", title:"Fernando", artist:"ABBA", year:1976 },
+  { id:"xFrGuyw1V8s", title:"Dancing Queen", artist:"ABBA", year:1976 },
+  { id:"CQKyLOQPTPo", title:"Lay All Your Love on Me", artist:"ABBA", year:1980 },
+  { id:"p4QqMKe3rwY", title:"Chiquitita", artist:"ABBA", year:1979 },
+  { id:"zWDcot2YezA", title:"Burning Love", artist:"Elvis Presley", year:1972 },
+  { id:"gj0Rz-uP4Mk", title:"Jailhouse Rock", artist:"Elvis Presley", year:1957 },
+  { id:"-eHJ12Vhpyc", title:"Hound Dog", artist:"Elvis Presley", year:1956 },
+  { id:"vGJTaP6anOU", title:"Can't Help Falling in Love", artist:"Elvis Presley", year:1961 },
+  { id:"OhW6t4rEJwU", title:"(You're the) Devil in Disguise", artist:"Elvis Presley", year:1963 },
+  { id:"Z4mbxaa3XL8", title:"Out of My League", artist:"Fitz and the Tantrums", year:2013 },
+  { id:"5Rswx2Z7SDw", title:"Holiday", artist:"Madonna", year:1983 },
+  { id:"8q2WS6ahCnY", title:"Cherish", artist:"Madonna", year:1989 },
+  { id:"EDwb9jOVRtU", title:"Hung Up", artist:"Madonna", year:2005 },
+  { id:"kemivUKb4f4", title:"Buddy Holly", artist:"Weezer", year:1994 },
+  { id:"erG5rgNYSdk", title:"Island in the Sun", artist:"Weezer", year:2001 },
+  { id:"yURRmWtbTbo", title:"Don't Stop 'Til You Get Enough", artist:"Michael Jackson", year:1979 },
+  { id:"AIOAlaACuv4", title:"Fast Car", artist:"Tracy Chapman", year:1988 },
+  { id:"tWqcWwIUOlY", title:"Heaven Can Wait", artist:"Michael Jackson", year:2001 },
+  { id:"u5CVsCnxyXg", title:"No Surprises", artist:"Radiohead", year:1997 },
+  { id:"m3-hY-hlhBg", title:"How Will I Know", artist:"Whitney Houston", year:1985 },
+  { id:"WFaozNKOdLk", title:"Now That You're Gone", artist:"The Raconteurs", year:2018 },
+  { id:"fZSiBj4vCiY", title:"My Maria", artist:"Brooks & Dunn", year:1996 },
+  { id:"zR_477WqAE4", title:"Brand New Man", artist:"Brooks & Dunn", year:1991 },
+  { id:"AxFdeZER8Eg", title:"Neon Moon", artist:"Brooks & Dunn", year:1992 },
 ];
 
 /* =========================================================
@@ -830,31 +876,91 @@ function powerOff(){
 }
 
 /* =========================================================
-   Guide panel — sorted alphabetically by artist
+   Guide panel — click an artist to expand their songs.
+   Artists with under 2 songs are grouped into a Misc bucket.
    ========================================================= */
+function getInitials(name){
+  const words = name.replace(/^The\s+/i, '').split(/\s+/).filter(Boolean);
+  if(words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+function getArtistColor(name){
+  let hash = 0;
+  for(let i = 0; i < name.length; i++){ hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 62%, 42%)`;
+}
+
+function renderArtistCard(name, indices, isMisc){
+  const card = document.createElement('div');
+  card.className = 'artist-card';
+
+  const row = document.createElement('div');
+  row.className = 'artist-row';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'artist-avatar';
+  avatar.style.background = isMisc ? '#4a4655' : getArtistColor(name);
+  avatar.textContent = isMisc ? '★' : getInitials(name);
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'artist-name';
+  nameEl.textContent = isMisc ? 'Misc — One-Hit Wonders' : name;
+
+  const count = document.createElement('div');
+  count.className = 'artist-count';
+  count.textContent = `${indices.length} song${indices.length !== 1 ? 's' : ''}`;
+
+  const chevron = document.createElement('div');
+  chevron.className = 'artist-chevron';
+  chevron.textContent = '▸';
+
+  row.append(avatar, nameEl, count, chevron);
+  row.addEventListener('click', ()=> card.classList.toggle('open'));
+
+  const songsWrap = document.createElement('div');
+  songsWrap.className = 'artist-songs';
+  indices.forEach(idx=>{
+    const t = PLAYLIST[idx];
+    const songRow = document.createElement('div');
+    const isCurrent = programMode === 'music' && queue[qPos] === idx;
+    songRow.className = 'artist-song-row' + (isCurrent ? ' current' : '');
+    songRow.innerHTML = isMisc
+      ? `<span>${t.artist} — ${t.title}</span><span class="as-year">${t.year}</span>`
+      : `<span>${t.title}</span><span class="as-year">${t.year}</span>`;
+    songRow.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(!isPoweredOn) powerOn();
+      const pos = queue.indexOf(idx);
+      playIndexInQueue(pos);
+    });
+    songsWrap.appendChild(songRow);
+  });
+
+  card.append(row, songsWrap);
+  guideList.appendChild(card);
+}
+
 function renderGuide(){
   guideList.innerHTML = '';
   const heading = document.getElementById('guideHeading');
-  if(heading) heading.textContent = `AMTV Program Guide — ${PLAYLIST.length} videos in rotation (A–Z by artist)`;
+  if(heading) heading.textContent = `AMTV Program Guide — ${PLAYLIST.length} videos · click an artist to browse`;
 
-  const sorted = PLAYLIST
-    .map((t, idx) => ({ ...t, idx }))
-    .sort((a, b) => a.artist.localeCompare(b.artist) || a.title.localeCompare(b.title));
+  const grouped = {};
+  PLAYLIST.forEach((t, idx)=>{ (grouped[t.artist] = grouped[t.artist] || []).push(idx); });
 
-  sorted.forEach(t=>{
-    const li = document.createElement('li');
-    const isCurrent = programMode === 'music' && queue[qPos] === t.idx;
-    li.className = isCurrent ? 'current' : '';
-    li.innerHTML = `<span class="g-idx">${t.year}</span>
-                     <span class="g-title">${t.artist} — ${t.title}</span>
-                     <span class="g-year"></span>`;
-    li.addEventListener('click', ()=>{
-      if(!isPoweredOn) powerOn();
-      const pos = queue.indexOf(t.idx);
-      playIndexInQueue(pos);
-    });
-    guideList.appendChild(li);
-  });
+  const artistNames = Object.keys(grouped).sort((a, b)=> a.localeCompare(b));
+  const mainArtists = artistNames.filter(a => grouped[a].length >= 2);
+  const miscArtists = artistNames.filter(a => grouped[a].length < 2);
+
+  mainArtists.forEach(name => renderArtistCard(name, grouped[name], false));
+
+  if(miscArtists.length){
+    let miscIndices = [];
+    miscArtists.forEach(a => miscIndices.push(...grouped[a]));
+    miscIndices.sort((a, b)=> PLAYLIST[a].artist.localeCompare(PLAYLIST[b].artist));
+    renderArtistCard('Misc', miscIndices, true);
+  }
 }
 
 /* =========================================================
