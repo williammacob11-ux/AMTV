@@ -103,6 +103,7 @@
       inset 0 0 0 3px #000,
       inset 0 0 60px rgba(0,0,0,.9);
     cursor:pointer;
+    contain:layout paint style;
   }
   #player-container, #player-container iframe{
     position:absolute; inset:0; width:100%; height:100%; border:0;
@@ -114,7 +115,10 @@
     background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
     z-index:5;
   }
+  /* Scanlines are drawn on an oversized layer and moved with transform (GPU-composited,
+     no layout/paint cost per frame) instead of animating background-position (which repaints). */
   .fx-scan{
+    top:-150px; bottom:-150px;
     background:repeating-linear-gradient(
       to bottom,
       rgba(0,0,0,.28) 0px, rgba(0,0,0,.28) 1px,
@@ -122,20 +126,23 @@
     );
     mix-blend-mode:multiply;
     z-index:6;
-    animation:scan-drift 9s linear infinite;
+    animation:scan-drift-t 9s linear infinite;
+    will-change:transform;
   }
-  @keyframes scan-drift{ from{background-position-y:0;} to{background-position-y:300px;} }
+  @keyframes scan-drift-t{ from{transform:translateY(0);} to{transform:translateY(150px);} }
   .fx-bar{
-    position:absolute; left:0; right:0; height:26%;
+    position:absolute; left:0; right:0; height:26%; top:-30%;
     background:linear-gradient(to bottom, transparent, rgba(255,255,255,.05), transparent);
     z-index:7;
-    animation:bar-roll 11s linear infinite;
+    animation:bar-roll-t 11s linear infinite;
+    will-change:transform;
   }
-  @keyframes bar-roll{ from{top:-30%;} to{top:110%;} }
+  @keyframes bar-roll-t{ from{transform:translateY(0);} to{transform:translateY(540%);} }
   .fx-grain{
     z-index:8; opacity:.5; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
     animation:grain-shift .5s steps(4) infinite;
+    will-change:transform;
   }
   @keyframes grain-shift{
     0%{transform:translate(0,0);} 25%{transform:translate(-1%,1%);}
@@ -152,12 +159,12 @@
     opacity:0;
     z-index:12;
   }
-  .fx-tracking.glitching{ animation:tracking-sweep .55s linear; }
-  @keyframes tracking-sweep{
-    0%{ top:-30px; opacity:0; }
+  .fx-tracking.glitching{ animation:tracking-sweep-t .55s linear; will-change:transform, opacity; }
+  @keyframes tracking-sweep-t{
+    0%{ transform:translateY(0); opacity:0; }
     8%{ opacity:.85; }
     92%{ opacity:.85; }
-    100%{ top:104%; opacity:0; }
+    100%{ transform:translateY(600px); opacity:0; }
   }
   .screen-wrap.jitter #player-container{ animation:jitter-shift .4s steps(3); }
   @keyframes jitter-shift{
@@ -172,6 +179,8 @@
     position:absolute; inset:0; width:100%; height:100%;
     z-index:20; opacity:0; pointer-events:none;
     transition:opacity .12s linear;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
   }
   canvas.fx-static.on{ opacity:1; }
 
@@ -515,7 +524,7 @@ const PLAYLIST = [
   { id:"eH3giaIzONA", title:"I Wanna Dance With Somebody (Who Loves Me)", artist:"Whitney Houston", year:1987 },
   { id:"djV11Xbc914", title:"Take On Me", artist:"a-ha", year:1985 },
   { id:"qYkbTyHXwbs", title:"Jessie's Girl", artist:"Rick Springfield", year:1981 },
-  { id:"Zbp5UuCz2kk", title:"Magic Dance", artist:"David Bowie (Labyrinth)", year:1986 },
+  { id:"Zbp5UuCz2kk", title:"Magic Dance (from Labyrinth)", artist:"David Bowie", year:1986 },
   { id:"IGVZOLV9SPo", title:"Love Is a Battlefield", artist:"Pat Benatar", year:1983 },
   { id:"XZVpR3Pk-r8", title:"Tainted Love", artist:"Soft Cell", year:1981 },
   { id:"TvnYmWpD_T8", title:"Purple Rain", artist:"Prince", year:1984 },
@@ -597,6 +606,22 @@ const PLAYLIST = [
   { id:"fZSiBj4vCiY", title:"My Maria", artist:"Brooks & Dunn", year:1996 },
   { id:"zR_477WqAE4", title:"Brand New Man", artist:"Brooks & Dunn", year:1991 },
   { id:"AxFdeZER8Eg", title:"Neon Moon", artist:"Brooks & Dunn", year:1992 },
+  { id:"2MRdtXWcgIw", title:"Adam's Song", artist:"Blink-182", year:1999 },
+  { id:"XFkzRNyygfk", title:"Creep", artist:"Radiohead", year:1992 },
+  { id:"lXgkuM2NhYI", title:"Heroes", artist:"David Bowie", year:1977 },
+  { id:"zw79RVnlCb0", title:"Hellraiser", artist:"Ozzy Osbourne", year:1991 },
+  { id:"5X-Mrc2l1d0", title:"Rock With You", artist:"Michael Jackson", year:1979 },
+  { id:"1MPZRcyTrcU", title:"You've Got a Friend in Me", artist:"Randy Newman", year:1995 },
+  { id:"rXs9MXrHxVE", title:"Hit Me With Your Best Shot", artist:"Pat Benatar", year:1980 },
+  { id:"JwkrEz0wDI8", title:"Believe", artist:"Josh Groban", year:2004 },
+  { id:"KtlgYxa6BMU", title:"The Night We Met", artist:"Lord Huron", year:2015 },
+  { id:"pbMwTqkKSps", title:"When the Party's Over", artist:"Billie Eilish", year:2018 },
+  { id:"V1Pl8CzNzCw", title:"Lovely", artist:"Billie Eilish", year:2018 },
+  { id:"9Ke4480MicU", title:"Issues", artist:"Julia Michaels", year:2017 },
+  { id:"bPYefBD1Rzs", title:"What a Time", artist:"Julia Michaels", year:2019 },
+  { id:"1jO2wSpAoxA", title:"If the World Was Ending", artist:"JP Saxe feat. Julia Michaels", year:2019 },
+  { id:"Kw7vb-dYDLU", title:"Into You", artist:"Julia Michaels", year:2019 },
+  { id:"OnFr0fYVnbw", title:"Deep", artist:"Julia Michaels", year:2019 },
 ];
 
 /* =========================================================
@@ -634,27 +659,31 @@ const volSlider    = document.getElementById('volSlider');
 
 /* =========================================================
    Static / channel-change noise burst
+   Optimized for low-end hardware: the noise buffer is rendered at a
+   fixed low internal resolution and scaled up with crisp/pixelated
+   scaling (also reads as more authentic chunky CRT static), and pixels
+   are written via a typed-array view instead of per-channel ImageData
+   writes, which is significantly cheaper per frame.
    ========================================================= */
 const sctx = staticCanvas.getContext('2d');
+const STATIC_W = 160, STATIC_H = 90;
 function sizeCanvas(){
-  staticCanvas.width = screenWrap.clientWidth;
-  staticCanvas.height = screenWrap.clientHeight;
+  staticCanvas.width = STATIC_W;
+  staticCanvas.height = STATIC_H;
 }
-window.addEventListener('resize', sizeCanvas);
 
 let staticRAF = null;
+const staticImg = sctx.createImageData(STATIC_W, STATIC_H);
+const staticBuf32 = new Uint32Array(staticImg.data.buffer);
 function drawStaticFrame(){
-  const w = staticCanvas.width, h = staticCanvas.height;
-  const img = sctx.createImageData(w, h);
-  for(let i=0;i<img.data.length;i+=4){
-    const v = Math.random()*255;
-    img.data[i]=v; img.data[i+1]=v; img.data[i+2]=v; img.data[i+3]=255;
+  for(let i = 0; i < staticBuf32.length; i++){
+    const v = (Math.random() * 255) | 0;
+    staticBuf32[i] = (255 << 24) | (v << 16) | (v << 8) | v; // opaque grayscale, ABGR order
   }
-  sctx.putImageData(img,0,0);
+  sctx.putImageData(staticImg, 0, 0);
   staticRAF = requestAnimationFrame(drawStaticFrame);
 }
 function burstStatic(ms=420){
-  sizeCanvas();
   staticCanvas.classList.add('on');
   drawStaticFrame();
   return new Promise(resolve=>{
