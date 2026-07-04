@@ -304,41 +304,6 @@
   .vol-wrap input[type=range]{ accent-color:var(--cyan); }
 
   /* ---------- guide panel ---------- */
-  .guide{
-    width:min(940px,96vw);
-    background:linear-gradient(160deg,var(--bezel-hi),var(--bezel) 60%);
-    border-radius:14px;
-    padding:14px 16px 18px;
-    display:none;
-  }
-  .guide.open{ display:block; }
-  .guide h2{ font-size:20px; letter-spacing:2px; color:var(--cyan); margin-bottom:8px; }
-  .guide-list{ max-height:420px; overflow-y:auto; }
-  .artist-card{ border-bottom:1px dashed rgba(255,255,255,.08); }
-  .artist-row{
-    display:flex; align-items:center; gap:12px;
-    padding:10px 6px; cursor:pointer;
-  }
-  .artist-row:hover{ background:rgba(255,255,255,.05); }
-  .artist-avatar{
-    width:38px; height:38px; border-radius:50%; flex:none;
-    display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-display); font-size:14px; color:#fff;
-    text-shadow:0 1px 2px rgba(0,0,0,.4);
-  }
-  .artist-name{ flex:1; font-size:19px; letter-spacing:.5px; }
-  .artist-count{ color:#8f8a9a; font-size:14px; flex:none; }
-  .artist-chevron{ flex:none; color:#8f8a9a; transition:transform .2s ease; }
-  .artist-card.open .artist-chevron{ transform:rotate(90deg); color:var(--cyan); }
-  .artist-songs{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
-  .artist-card.open .artist-songs{ max-height:800px; }
-  .artist-song-row{
-    display:flex; justify-content:space-between; gap:10px;
-    padding:7px 8px 7px 58px; font-size:16px; cursor:pointer;
-  }
-  .artist-song-row:hover{ background:rgba(255,255,255,.05); }
-  .artist-song-row.current{ color:var(--magenta); }
-  .artist-song-row .as-year{ color:#8f8a9a; flex:none; }
 
   /* ---------- EAS overlay ---------- */
   .eas-overlay{
@@ -397,7 +362,7 @@
     .set-meta{ display:none; }
   }
 </style>
-</head>
+
 <body>
 
   <div class="strap">You are watching</div>
@@ -411,7 +376,7 @@
         </div>
         <div class="set-meta">
           <div><span class="rec-dot"></span>ON AIR</div>
-          <div id="clockDisplay">CH 03</div>
+          <div id="clockDisplay">CH 01</div>
         </div>
       </div>
 
@@ -427,7 +392,7 @@
         <canvas class="fx-static" id="staticCanvas"></canvas>
 
         <div class="now-playing" id="nowPlaying">
-          <div class="np-label">▶ Now Playing</div>
+          <div class="np-label">▶ Now Watching</div>
           <div class="np-title" id="npTitle">—</div>
           <div class="np-sub" id="npSub">—</div>
         </div>
@@ -453,43 +418,26 @@
       <svg viewBox="0 0 24 24"><path d="M11 2h2v10h-2z M12 5.5a7 7 0 1 1-4.9 2l1.4 1.4A5 5 0 1 0 12 7.5z"/></svg>
       Power
     </button>
-    <button class="deck-btn" id="btnPrev" title="Previous channel">
-      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12l-10-6z"/></svg>
-      Prev
+    <button class="deck-btn" id="btnChDown" title="Channel down">
+      <svg viewBox="0 0 24 24"><path d="M7 14l5 5 5-5H7z"/></svg>
+      CH −
     </button>
-    <button class="deck-btn" id="btnPlay" title="Play / Pause">
-      <svg viewBox="0 0 24 24" id="iconPlay"><path d="M8 5v14l11-7z"/></svg>
-      Play
+    <button class="deck-btn" id="btnChUp" title="Channel up">
+      <svg viewBox="0 0 24 24"><path d="M7 10l5-5 5 5H7z"/></svg>
+      CH +
     </button>
-    <button class="deck-btn" id="btnNext" title="Next channel">
-      <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l10-6z"/></svg>
-      Next
-    </button>
-    <button class="deck-btn" id="btnSkipAd" title="Skip this video (use if a YouTube ad is playing)">
+    <button class="deck-btn" id="btnSkip" title="Skip (use if an ad or bad clip is playing)">
       <svg viewBox="0 0 24 24"><path d="M4 6v12l8-6zM13 6v12l8-6z"/></svg>
-      Skip Ad
-    </button>
-    <button class="deck-btn" id="btnShuffle" title="Shuffle">
-      <svg viewBox="0 0 24 24"><path d="M17 3l4 4-4 4V8h-3.6a3 3 0 0 0-2.5 1.4L7 18H3v-2h3l4-6.6A5 5 0 0 1 13.4 6H17V3zM17 21l4-4-4-4v3h-3.6a5 5 0 0 1-4.1-2.4L7 8H3V6h4a3 3 0 0 1 2.5 1.4L13 15h4v3z"/></svg>
-      Shuffle
+      Skip
     </button>
     <div class="vol-wrap deck-btn">
       <svg viewBox="0 0 24 24" id="iconVol"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>
       <input type="range" id="volSlider" min="0" max="100" value="70">
     </div>
-    <button class="deck-btn" id="btnGuide" title="Program guide">
-      <svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zM4 11h16v2H4zM4 17h16v2H4z"/></svg>
-      Guide
-    </button>
     <button class="deck-btn alert" id="btnEas" title="Test the Emergency Alert System">
       <svg viewBox="0 0 24 24"><path d="M12 2 1 21h22z m0 6v6m0 3.2v.1"/></svg>
       Test EAS
     </button>
-  </div>
-
-  <div class="guide" id="guidePanel">
-    <h2 id="guideHeading">AMTV Program Guide</h2>
-    <div class="guide-list" id="guideList"></div>
   </div>
 
   <div class="eas-overlay" id="easOverlay">
@@ -504,20 +452,16 @@
   </div>
 
   <footer>
-    AMTV is a fan-made retro broadcast simulator. Music videos are streamed directly from YouTube via
-    the official IFrame Player API — nothing is hosted or redistributed here. Weather data via the
-    National Weather Service (api.weather.gov).
+    AMTV is a fan-made retro broadcast simulator with 14 tunable channels. Video is streamed
+    directly from YouTube via the official IFrame Player API — nothing is hosted or redistributed
+    here. Weather data via the National Weather Service (api.weather.gov).
   </footer>
 
 <script>
-/* =========================================================
-   AMTV — playlist data
-   ========================================================= */
-const OFFLINE_VIDEO_ID = "q7UMI2yUrao";   // plays on loop 12am–6am
-const NEWS_VIDEO_ID    = "iipR5yUp36o";   // ABC News Live 24/7 stream, plays 6–7am
-// NOTE: NEWS_VIDEO_ID points to a persistent live stream. If ABC ever rotates
-// the stream to a new video ID, just swap the value above.
 
+/* =========================================================
+   AMTV — Channel 1 playlist data (unchanged song library)
+   ========================================================= */
 const PLAYLIST = [
   { id:"qnkuBUAwfe0", title:"One Last Breath", artist:"Creed", year:2001 },
   { id:"7YvAYIJSSZY", title:"Somebody's Watching Me", artist:"Rockwell", year:1984 },
@@ -625,18 +569,68 @@ const PLAYLIST = [
 ];
 
 /* =========================================================
+   AMTV — the 14-channel lineup
+   Each channel has a type that controls playback behavior:
+   - 'music'    : Channel 1 only. Shuffled forever, no manual browsing.
+   - 'sequence' : plays items in the given order, loops back to the start.
+   - 'shuffle'  : plays items in random order, reshuffles when exhausted.
+   - 'loop'     : a single video that just replays itself.
+   ========================================================= */
+const NO_SIGNAL_ID = "nEkZ9MJ01Lc";
+
+const CHANNELS = [
+  { number:1,  name:"AMTV", type:"music", items: PLAYLIST },
+  { number:2,  name:"CNN News", type:"loop", items:[
+    { id:"GotlA1KKWoo" },
+  ]},
+  { number:3,  name:"Young Sheldon Reruns", type:"sequence", items:[
+    { id:"VDRorIuHd6Q", label:"Season 1" },
+    { id:"p6zI7-Zq8h4", label:"Season 2" },
+    { id:"FOsmE8g5akY", label:"Season 3" },
+    { id:"8e9saJC7bYg", label:"Season 5" },
+    { id:"E40jsNOxj_w", label:"Season 6" },
+    { id:"6sSMqld-Ods", label:"Season 7" },
+  ]},
+  { number:4,  name:"Georgie & Mandy's First Marriage", type:"sequence", items:[
+    { id:"IXRHhRD9mqE", label:"Season 1" },
+    { id:"lu1VWt4GFCw", label:"Season 2" },
+  ]},
+  { number:5,  name:"Tech Corner", type:"shuffle", items:[
+    { id:"QrT4S9i3agE" }, { id:"gCXmKjDecU" }, { id:"coX4duwUCpw" }, { id:"8FpPSMIB4uA", start:768 },
+    { id:"idEAABFzpfg" }, { id:"AQZl-78pnEQ" }, { id:"9Pt1uZPL4Ew" }, { id:"RTZlj4mmpNE", start:4 },
+  ]},
+  { number:6,  name:"After Dark", type:"shuffle", items:[
+    { id:"ZGDwT_o5ZrI" }, { id:"yjDUcRcqZsQ" }, { id:"s8whE6hmiU4" }, { id:"PM8DIS7oTeg" },
+    { id:"HTIYQQVzqGE" }, { id:"fHXiNXJbPi4" }, { id:"kYXqRJI2dkQ", start:2 }, { id:"2fnTT0I24uQ" }, { id:"KxuudNfrxSg" },
+  ]},
+  { number:7,  name:"No Signal", type:"loop", items:[ { id: NO_SIGNAL_ID } ] },
+  { number:8,  name:"Bankrupt", type:"loop", items:[ { id:"ZucyCLraEIE" } ] },
+  { number:9,  name:"Open Road", type:"shuffle", items:[
+    { id:"pH9dnJ8BmY0", start:2 }, { id:"w5ECOsaQgpg", start:341 }, { id:"Qz1RZh7LB4U" }, { id:"6jQuTJQ1rBg" },
+    { id:"sXbHdKJ1D78" }, { id:"DK5t0FaUYLc", start:57 }, { id:"aSX1Ja5o71U" }, { id:"XMktVDv890I" },
+  ]},
+  { number:10, name:"No Signal", type:"loop", items:[ { id: NO_SIGNAL_ID } ] },
+  { number:11, name:"Seinfeld Reruns", type:"loop", items:[ { id:"MJoqIwaNuMg" } ] },
+  { number:12, name:"Weather Channel", type:"shuffle", items:[
+    { id:"gZt556WD7ps" }, { id:"1yMy1tyOjmU", start:73 }, { id:"lGx6VaN64yw", start:217 },
+    { id:"jPxDQ6zjPpE" }, { id:"AdhenrbkN8Y" }, { id:"2oSKWlZrabo" },
+  ]},
+  { number:13, name:"No Signal", type:"loop", items:[ { id: NO_SIGNAL_ID } ] },
+  { number:14, name:"No Signal", type:"loop", items:[ { id: NO_SIGNAL_ID } ] },
+];
+
+/* =========================================================
    State
    ========================================================= */
-let queue = PLAYLIST.map((_, i) => i);
-let qPos = 0;
 let player = null;
 let playerReady = false;
 let isPoweredOn = false;
-let isShuffled = true;
 let easTimer = null;
 let seenAlertIds = new Set();
-let programMode = 'music';        // 'music' | 'news' | 'offline'
-let awaitingOfflineSwitch = false;
+let currentChannel = 1;
+let chQueue = [0];
+let chPos = 0;
+let lastErrorTime = 0;
 
 /* =========================================================
    DOM refs
@@ -647,23 +641,19 @@ const nowPlaying   = document.getElementById('nowPlaying');
 const npTitle      = document.getElementById('npTitle');
 const npSub        = document.getElementById('npSub');
 const staticCanvas = document.getElementById('staticCanvas');
-const guidePanel   = document.getElementById('guidePanel');
-const guideList    = document.getElementById('guideList');
 const weatherCrawl = document.getElementById('weatherCrawl');
 const easOverlay   = document.getElementById('easOverlay');
 const easKicker    = document.getElementById('easKicker');
 const easMainText  = document.getElementById('easMainText');
 const easCrawlText = document.getElementById('easCrawlText');
-const iconPlay     = document.getElementById('iconPlay');
 const volSlider    = document.getElementById('volSlider');
+const clockDisplay = document.getElementById('clockDisplay');
 
 /* =========================================================
    Static / channel-change noise burst
-   Optimized for low-end hardware: the noise buffer is rendered at a
-   fixed low internal resolution and scaled up with crisp/pixelated
-   scaling (also reads as more authentic chunky CRT static), and pixels
-   are written via a typed-array view instead of per-channel ImageData
-   writes, which is significantly cheaper per frame.
+   Rendered at a fixed low internal resolution and scaled up with
+   crisp/pixelated scaling — cheap on old hardware, and reads as
+   more authentic chunky CRT static than smooth noise would.
    ========================================================= */
 const sctx = staticCanvas.getContext('2d');
 const STATIC_W = 160, STATIC_H = 90;
@@ -706,7 +696,7 @@ function loadYouTubeAPI(){
 window.onYouTubeIframeAPIReady = function(){
   player = new YT.Player('player-container', {
     height:'100%', width:'100%',
-    videoId: PLAYLIST[queue[qPos]].id,
+    videoId: CHANNELS[0].items[0].id,
     playerVars:{
       autoplay:0, controls:0, disablekb:1, fs:0,
       iv_load_policy:3, modestbranding:1, playsinline:1, rel:0
@@ -729,147 +719,113 @@ loadYouTubeAPI();
 function setLowQuality(){
   try{ player.setPlaybackQuality('large'); }catch(err){}
 }
-function loadVideo(id){
+function loadVideo(id, startSeconds){
   if(!playerReady) return;
-  player.loadVideoById(id);
+  if(startSeconds){
+    player.loadVideoById({ videoId:id, startSeconds });
+  } else {
+    player.loadVideoById(id);
+  }
   setLowQuality();
 }
 
 function onPlayerStateChange(e){
   if(e.data === YT.PlayerState.ENDED){
-    if(programMode === 'music' && awaitingOfflineSwitch){
-      awaitingOfflineSwitch = false;
-      enterOffline();
-    } else if(programMode === 'music'){
-      nextTrack();
-    } else if(programMode === 'offline'){
-      loadVideo(OFFLINE_VIDEO_ID);
-      player.playVideo();
-    } else if(programMode === 'news'){
-      loadVideo(NEWS_VIDEO_ID);
-      player.playVideo();
-    }
+    nextChannelItem();
   }
   if(e.data === YT.PlayerState.PLAYING){
-    iconPlay.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
     setLowQuality();
   }
-  if(e.data === YT.PlayerState.PAUSED){ iconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>'; }
 }
 function onPlayerError(e){
-  console.warn('AMTV: signal lost on video', 'code', e.data);
-  if(programMode === 'music'){
-    flashMessage('SIGNAL LOST — CHANGING CHANNEL');
-    nextTrack();
+  console.warn('AMTV: signal lost', 'code', e.data);
+  const now = Date.now();
+  flashMessage('SIGNAL LOST — CHANGING CHANNEL');
+  if(now - lastErrorTime < 3000){
+    setTimeout(()=> nextChannelItem(), 1500);
+  } else {
+    nextChannelItem();
   }
+  lastErrorTime = now;
 }
 
 function flashMessage(text){
   npTitle.textContent = text;
   npSub.textContent = '';
   nowPlaying.classList.add('show');
-  setTimeout(()=> updateNowPlaying(), 1600);
+  setTimeout(()=> updateNowPlayingForChannel(CHANNELS[currentChannel - 1], currentItem()), 1600);
 }
 
 /* =========================================================
-   Playback control
+   Channel system
    ========================================================= */
-function currentTrack(){ return PLAYLIST[queue[qPos]]; }
-
-function updateNowPlaying(){
-  if(programMode !== 'music'){ return; }
-  const t = currentTrack();
-  npTitle.textContent = t.title;
-  npSub.textContent = `${t.artist} · ${t.year}`;
-  nowPlaying.classList.add('show');
-  clearTimeout(updateNowPlaying._hideTimer);
-  updateNowPlaying._hideTimer = setTimeout(()=> nowPlaying.classList.remove('show'), 6000);
-  renderGuide();
+function currentItem(){
+  const ch = CHANNELS[currentChannel - 1];
+  return ch.items[chQueue[chPos]];
 }
 
-async function playIndexInQueue(newPos){
-  qPos = ((newPos % queue.length) + queue.length) % queue.length;
-  await burstStatic();
-  loadVideo(currentTrack().id);
-  if(playerReady) player.playVideo();
-  updateNowPlaying();
-}
-function nextTrack(){ playIndexInQueue(qPos+1); }
-function prevTrack(){ playIndexInQueue(qPos-1); }
-
-function shuffleQueue(keepCurrent=true){
-  const current = queue[qPos];
-  const arr = PLAYLIST.map((_,i)=>i);
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
+function buildQueueForChannel(ch){
+  const idx = Array.from({ length: ch.items.length }, (_, i)=> i);
+  if(ch.type === 'shuffle' || ch.type === 'music'){
+    for(let i = idx.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
   }
-  queue = arr;
-  qPos = keepCurrent ? queue.indexOf(current) : 0;
-  isShuffled = true;
-  document.getElementById('btnShuffle').classList.add('on');
+  return idx;
 }
 
-/* =========================================================
-   Program schedule — Austin/Central time
-   AMTV is off the air 12am–6am, national news 6–7am, music the rest of the day.
-   ========================================================= */
-function getAustinHour(){
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone:'America/Chicago', hour:'2-digit', hour12:false
-  }).formatToParts(new Date());
-  let h = parseInt(parts.find(p=>p.type==='hour').value, 10);
-  if(h === 24) h = 0;
-  return h;
-}
-function getProgramState(){
-  const h = getAustinHour();
-  if(h < 6) return 'offline';
-  if(h < 7) return 'news';
-  return 'music';
-}
-
-function enterMusic(reshuffle=true){
-  programMode = 'music';
-  awaitingOfflineSwitch = false;
-  if(reshuffle) shuffleQueue(false);
-  loadVideo(currentTrack().id);
-  if(playerReady) player.playVideo();
-  updateNowPlaying();
-}
-function enterNews(){
-  programMode = 'news';
-  loadVideo(NEWS_VIDEO_ID);
-  if(playerReady) player.playVideo();
-  npTitle.textContent = 'AMTV MORNING NEWS';
-  npSub.textContent = 'National headlines · 6–7 AM';
+function updateNowPlayingForChannel(ch, item){
+  if(ch.type === 'music'){
+    npTitle.textContent = item.title;
+    npSub.textContent = `${item.artist} · ${item.year}`;
+  } else if(item.label){
+    npTitle.textContent = ch.name;
+    npSub.textContent = item.label;
+  } else {
+    npTitle.textContent = ch.name;
+    npSub.textContent = `Channel ${ch.number}`;
+  }
   nowPlaying.classList.add('show');
-  renderGuide();
-}
-function enterOffline(){
-  programMode = 'offline';
-  loadVideo(OFFLINE_VIDEO_ID);
-  if(playerReady) player.playVideo();
-  npTitle.textContent = 'AMTV IS OFF THE AIR';
-  npSub.textContent = 'Regular programming resumes at 6:00 AM Central';
-  nowPlaying.classList.add('show');
-  renderGuide();
+  clearTimeout(updateNowPlayingForChannel._hideTimer);
+  updateNowPlayingForChannel._hideTimer = setTimeout(()=> nowPlaying.classList.remove('show'), 6000);
 }
 
-function checkSchedule(){
-  if(!isPoweredOn) return;
-  const wanted = getProgramState();
-  if(wanted === programMode) return;
-  if(wanted === 'offline' && programMode === 'music'){
-    // let the current video finish before signing off, per request
-    awaitingOfflineSwitch = true;
+async function playCurrentItem(skipStatic){
+  const ch = CHANNELS[currentChannel - 1];
+  const item = currentItem();
+  if(!skipStatic) await burstStatic();
+  loadVideo(item.id, item.start);
+  if(playerReady) player.playVideo();
+  updateNowPlayingForChannel(ch, item);
+}
+
+function tuneToChannel(num){
+  currentChannel = ((num - 1) % CHANNELS.length + CHANNELS.length) % CHANNELS.length + 1;
+  const ch = CHANNELS[currentChannel - 1];
+  chQueue = buildQueueForChannel(ch);
+  chPos = 0;
+  clockDisplay.textContent = `CH ${String(currentChannel).padStart(2, '0')}`;
+  playCurrentItem(false);
+}
+
+function nextChannelItem(){
+  const ch = CHANNELS[currentChannel - 1];
+  if(ch.items.length <= 1){
+    playCurrentItem(true); // loop-type / single-item channel: just replay
     return;
   }
-  if(wanted === 'offline') enterOffline();
-  else if(wanted === 'news') enterNews();
-  else enterMusic();
+  chPos++;
+  if(chPos >= chQueue.length){
+    chQueue = buildQueueForChannel(ch); // reshuffles shuffle-type channels; sequence just restarts
+    chPos = 0;
+  }
+  playCurrentItem(true);
 }
-setInterval(checkSchedule, 30*1000);
+
+function channelUp(){ if(isPoweredOn) tuneToChannel(currentChannel + 1); }
+function channelDown(){ if(isPoweredOn) tuneToChannel(currentChannel - 1); }
+function skipCurrent(){ if(isPoweredOn) nextChannelItem(); }
 
 /* =========================================================
    Power on/off
@@ -882,16 +838,13 @@ function powerOn(){
   setTimeout(()=> screenWrap.classList.remove('crt-boot'), 550);
 
   const launch = ()=>{
-    const startMode = getProgramState();
-    if(startMode === 'offline') enterOffline();
-    else if(startMode === 'news') enterNews();
-    else enterMusic(true);
+    const randomChannel = 1 + Math.floor(Math.random() * CHANNELS.length);
+    tuneToChannel(randomChannel);
     player.unMute();
   };
   if(playerReady){
     launch();
   } else {
-    // player still loading — try again shortly
     const waitReady = setInterval(()=>{
       if(playerReady){ clearInterval(waitReady); launch(); }
     }, 200);
@@ -902,94 +855,6 @@ function powerOff(){
   isPoweredOn = false;
   powerScreen.classList.remove('hidden');
   if(playerReady) player.pauseVideo();
-}
-
-/* =========================================================
-   Guide panel — click an artist to expand their songs.
-   Artists with under 2 songs are grouped into a Misc bucket.
-   ========================================================= */
-function getInitials(name){
-  const words = name.replace(/^The\s+/i, '').split(/\s+/).filter(Boolean);
-  if(words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
-}
-function getArtistColor(name){
-  let hash = 0;
-  for(let i = 0; i < name.length; i++){ hash = name.charCodeAt(i) + ((hash << 5) - hash); }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 62%, 42%)`;
-}
-
-function renderArtistCard(name, indices, isMisc){
-  const card = document.createElement('div');
-  card.className = 'artist-card';
-
-  const row = document.createElement('div');
-  row.className = 'artist-row';
-
-  const avatar = document.createElement('div');
-  avatar.className = 'artist-avatar';
-  avatar.style.background = isMisc ? '#4a4655' : getArtistColor(name);
-  avatar.textContent = isMisc ? '★' : getInitials(name);
-
-  const nameEl = document.createElement('div');
-  nameEl.className = 'artist-name';
-  nameEl.textContent = isMisc ? 'Misc — One-Hit Wonders' : name;
-
-  const count = document.createElement('div');
-  count.className = 'artist-count';
-  count.textContent = `${indices.length} song${indices.length !== 1 ? 's' : ''}`;
-
-  const chevron = document.createElement('div');
-  chevron.className = 'artist-chevron';
-  chevron.textContent = '▸';
-
-  row.append(avatar, nameEl, count, chevron);
-  row.addEventListener('click', ()=> card.classList.toggle('open'));
-
-  const songsWrap = document.createElement('div');
-  songsWrap.className = 'artist-songs';
-  indices.forEach(idx=>{
-    const t = PLAYLIST[idx];
-    const songRow = document.createElement('div');
-    const isCurrent = programMode === 'music' && queue[qPos] === idx;
-    songRow.className = 'artist-song-row' + (isCurrent ? ' current' : '');
-    songRow.innerHTML = isMisc
-      ? `<span>${t.artist} — ${t.title}</span><span class="as-year">${t.year}</span>`
-      : `<span>${t.title}</span><span class="as-year">${t.year}</span>`;
-    songRow.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if(!isPoweredOn) powerOn();
-      const pos = queue.indexOf(idx);
-      playIndexInQueue(pos);
-    });
-    songsWrap.appendChild(songRow);
-  });
-
-  card.append(row, songsWrap);
-  guideList.appendChild(card);
-}
-
-function renderGuide(){
-  guideList.innerHTML = '';
-  const heading = document.getElementById('guideHeading');
-  if(heading) heading.textContent = `AMTV Program Guide — ${PLAYLIST.length} videos · click an artist to browse`;
-
-  const grouped = {};
-  PLAYLIST.forEach((t, idx)=>{ (grouped[t.artist] = grouped[t.artist] || []).push(idx); });
-
-  const artistNames = Object.keys(grouped).sort((a, b)=> a.localeCompare(b));
-  const mainArtists = artistNames.filter(a => grouped[a].length >= 2);
-  const miscArtists = artistNames.filter(a => grouped[a].length < 2);
-
-  mainArtists.forEach(name => renderArtistCard(name, grouped[name], false));
-
-  if(miscArtists.length){
-    let miscIndices = [];
-    miscArtists.forEach(a => miscIndices.push(...grouped[a]));
-    miscIndices.sort((a, b)=> PLAYLIST[a].artist.localeCompare(PLAYLIST[b].artist));
-    renderArtistCard('Misc', miscIndices, true);
-  }
 }
 
 /* =========================================================
@@ -1037,9 +902,9 @@ function runSimulatedTest(){
          'concludes this test of the Emergency Alert System.'
   });
 }
-// Note: the simulated test alert no longer fires automatically on a timer — it only runs when
-// you press "Test EAS", or automatically if the NWS feed reports a genuine Moderate+ weather
-// alert for the Austin area (handled in loadWeather() below).
+// The simulated test alert only runs when you press "Test EAS", or automatically if the
+// NWS feed reports a genuine Moderate+ weather alert for the Austin area (see loadWeather below).
+// It can interrupt any channel, just like a real Emergency Alert System override.
 document.getElementById('btnEas').addEventListener('click', runSimulatedTest);
 
 /* =========================================================
@@ -1096,20 +961,9 @@ setInterval(()=>{ if(isPoweredOn) loadWeather(); }, 15*60*1000);
    ========================================================= */
 document.getElementById('btnPower').addEventListener('click', ()=> isPoweredOn ? powerOff() : powerOn());
 powerScreen.addEventListener('click', powerOn);
-document.getElementById('btnPrev').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') prevTrack(); });
-document.getElementById('btnNext').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') nextTrack(); });
-document.getElementById('btnSkipAd').addEventListener('click', ()=>{ if(isPoweredOn && programMode==='music') nextTrack(); });
-document.getElementById('btnShuffle').addEventListener('click', ()=>{ if(programMode==='music') shuffleQueue(); });
-document.getElementById('btnGuide').addEventListener('click', ()=>{
-  guidePanel.classList.toggle('open');
-  renderGuide();
-});
-document.getElementById('btnPlay').addEventListener('click', ()=>{
-  if(!isPoweredOn){ powerOn(); return; }
-  if(!playerReady) return;
-  const state = player.getPlayerState();
-  if(state === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
-});
+document.getElementById('btnChDown').addEventListener('click', channelDown);
+document.getElementById('btnChUp').addEventListener('click', channelUp);
+document.getElementById('btnSkip').addEventListener('click', skipCurrent);
 volSlider.addEventListener('input', ()=>{
   if(playerReady) player.setVolume(Number(volSlider.value));
 });
@@ -1141,8 +995,6 @@ function scheduleTrackingGlitch(){
 }
 scheduleTrackingGlitch();
 
-renderGuide();
 </script>
-
 </body>
 </html>
