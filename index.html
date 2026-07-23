@@ -9,52 +9,36 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     MHTV — a fake 24/7 music-video channel.
-     Palette:  ink #0a0a0a · hot yellow #ffe400 · shock pink #ff2d95
-               cyan #16e0ff · bone #f4f2e9
-     Display: Anton (chyron/logo) · Oswald (titles) · DM Mono (data)
-     ============================================================ */
-  :root{
-    --ink:#0a0a0a; --yellow:#ffe400; --pink:#ff2d95; --cyan:#16e0ff; --bone:#f4f2e9;
-  }
+  :root{ --ink:#0a0a0a; --yellow:#ffe400; --pink:#ff2d95; --cyan:#16e0ff; --bone:#f4f2e9; }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#000;overflow:hidden;color:var(--bone);
     font-family:"Oswald",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 
-  /* ---------- video, scaled to COVER the whole screen ---------- */
   #stage{position:fixed;inset:0;background:#000;overflow:hidden}
   #player-wrap{position:absolute;inset:0;overflow:hidden}
   #player{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;pointer-events:none}
-  #player iframe{width:100%;height:100%;display:block}
+    width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;border:0}
+  #guard{position:absolute;inset:0;z-index:20}
 
-  /* Invisible guard: eats all clicks on the video so nobody can skip/pause it. */
-  #guard{position:absolute;inset:0;z-index:20;cursor:default}
-
-  /* ---------- channel bug (logo) top-left ---------- */
   #bug{position:absolute;top:clamp(14px,2.2vw,30px);left:clamp(14px,2.2vw,30px);
-    z-index:40;display:flex;align-items:center;gap:9px;
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));user-select:none;pointer-events:none}
+    z-index:40;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));user-select:none;pointer-events:none}
   #bug .mark{font-family:"Anton";font-size:clamp(26px,3.6vw,44px);line-height:.8;
-    letter-spacing:-.03em;color:var(--yellow);
-    background:var(--ink);padding:.16em .18em .1em;transform:skewX(-6deg);
+    letter-spacing:-.03em;color:var(--yellow);background:var(--ink);
+    padding:.16em .18em .1em;transform:skewX(-6deg);display:inline-block;
     box-shadow:4px 4px 0 var(--pink)}
-  #bug .mark b{color:var(--ink);background:var(--yellow);padding:0 .06em;margin-left:.04em}
+  #bug .mark b{color:var(--ink);background:var(--yellow);padding:0 .06em}
   #bug .sub{font-family:"DM Mono";font-size:clamp(8px,1vw,11px);letter-spacing:.32em;
-    text-transform:uppercase;color:var(--bone);opacity:.85;margin-top:2px}
+    text-transform:uppercase;opacity:.85;margin-top:6px}
   .liverec{display:inline-flex;align-items:center;gap:5px}
   .liverec::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pink);
     animation:blink 1.4s steps(2,end) infinite}
   @keyframes blink{50%{opacity:0}}
 
-  /* ---------- broadcast clock top-right ---------- */
   #clock{position:absolute;top:clamp(14px,2.2vw,30px);right:clamp(14px,2.2vw,30px);z-index:40;
     font-family:"DM Mono";font-size:clamp(13px,1.5vw,18px);letter-spacing:.12em;
-    color:var(--bone);text-shadow:0 2px 6px rgba(0,0,0,.8);pointer-events:none}
-  #clock .cln{animation:blink 1.06s steps(2,end) infinite}
+    text-shadow:0 2px 6px rgba(0,0,0,.8);pointer-events:none}
 
-  /* ---------- the SIGNATURE: MTV-style lower-third chyron ---------- */
+  /* lower-third chyron */
   #chyron{position:absolute;left:clamp(16px,3vw,46px);bottom:clamp(30px,7vh,74px);z-index:45;
     max-width:min(560px,80vw);pointer-events:none;
     transform:translateX(-118%);opacity:0;transition:transform .55s cubic-bezier(.2,.9,.25,1),opacity .3s}
@@ -65,8 +49,8 @@
     box-shadow:5px 5px 0 rgba(0,0,0,.55)}
   #chyron .artist span{display:inline-block;transform:skewX(6deg)}
   #chyron .song{font-family:"Oswald";font-weight:700;font-size:clamp(16px,2.4vw,28px);
-    color:var(--bone);background:var(--ink);display:inline-block;margin-top:8px;
-    padding:.22em .5em;letter-spacing:.01em;box-shadow:5px 5px 0 rgba(0,0,0,.45)}
+    background:var(--ink);display:inline-block;margin-top:8px;
+    padding:.22em .5em;box-shadow:5px 5px 0 rgba(0,0,0,.45)}
   #chyron .meta{font-family:"DM Mono";font-size:clamp(10px,1.2vw,13px);letter-spacing:.18em;
     text-transform:uppercase;margin-top:9px;color:var(--ink);background:var(--cyan);
     display:inline-block;padding:.35em .7em;transform:skewX(-6deg)}
@@ -74,28 +58,48 @@
   #chyron .bar{height:5px;width:clamp(120px,26vw,240px);margin-top:11px;
     background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan))}
 
-  /* ---------- tuning static (canvas) shown between tracks ---------- */
   #static{position:absolute;inset:0;z-index:30;opacity:0;transition:opacity .18s;
     pointer-events:none;background:#000}
   #static.on{opacity:1}
-  #tune-label{position:absolute;inset:0;z-index:31;display:none;place-items:center;
-    font-family:"DM Mono";letter-spacing:.4em;color:var(--bone);text-transform:uppercase;
-    font-size:clamp(12px,1.6vw,16px);text-shadow:0 0 12px rgba(0,0,0,.9);pointer-events:none}
-  #tune-label.on{display:grid}
-  #tune-label b{animation:blink 1s steps(2,end) infinite;font-weight:500}
+  #tune{position:absolute;inset:0;z-index:31;display:none;place-items:center;text-align:center;
+    font-family:"DM Mono";letter-spacing:.3em;text-transform:uppercase;
+    font-size:clamp(11px,1.5vw,15px);text-shadow:0 0 12px rgba(0,0,0,.9);pointer-events:none;padding:20px}
+  #tune.on{display:grid}
+  #tune .err{color:var(--pink);letter-spacing:.16em;margin-top:14px;font-size:clamp(10px,1.2vw,12px);
+    max-width:520px;line-height:1.7}
 
-  /* ---------- bottom controls: mute + fullscreen (NO skip) ---------- */
   #controls{position:absolute;right:clamp(14px,2.2vw,28px);bottom:clamp(14px,2.2vw,28px);z-index:50;
     display:flex;gap:10px}
   .ctl{width:46px;height:46px;border:2px solid rgba(244,242,233,.5);background:rgba(10,10,10,.55);
-    color:var(--bone);border-radius:0;cursor:pointer;display:grid;place-items:center;
-    backdrop-filter:blur(3px);transition:transform .1s,border-color .15s,background .15s}
-  .ctl:hover{border-color:var(--yellow);background:rgba(10,10,10,.8)}
+    color:var(--bone);cursor:pointer;display:grid;place-items:center;
+    backdrop-filter:blur(3px);transition:transform .1s,border-color .15s,background .15s;
+    font-family:"DM Mono";font-size:15px}
+  .ctl:hover{border-color:var(--yellow);background:rgba(10,10,10,.85)}
   .ctl:active{transform:translateY(2px)}
   .ctl:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   .ctl svg{width:22px;height:22px;fill:currentColor}
 
-  /* ---------- power-on screen ---------- */
+  /* ---- fix-track panel ---- */
+  #fix{position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.88);display:none;
+    place-items:center;padding:24px;backdrop-filter:blur(4px)}
+  #fix.on{display:grid}
+  #fix .card{width:min(560px,100%);background:var(--ink);border:2px solid var(--yellow);padding:26px}
+  #fix h2{font-family:"Anton";font-size:26px;color:var(--yellow);text-transform:uppercase;
+    letter-spacing:.02em;margin-bottom:6px}
+  #fix .now{font-family:"DM Mono";font-size:12px;letter-spacing:.14em;opacity:.75;margin-bottom:18px;
+    text-transform:uppercase;line-height:1.7}
+  #fix label{display:block;font-family:"DM Mono";font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;opacity:.7;margin-bottom:7px}
+  #fix input{width:100%;background:#141414;border:2px solid #333;color:var(--bone);
+    padding:12px;font-family:"DM Mono";font-size:13px}
+  #fix input:focus{outline:none;border-color:var(--cyan)}
+  #fix .row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  #fix button{font-family:"Anton";text-transform:uppercase;letter-spacing:.04em;font-size:15px;
+    padding:.7em 1.2em;border:none;cursor:pointer;background:var(--yellow);color:var(--ink)}
+  #fix button.ghost{background:transparent;color:var(--bone);border:2px solid #444}
+  #fix button:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+  #fix .hint{font-family:"DM Mono";font-size:11px;line-height:1.9;opacity:.6;margin-top:16px}
+
   #boot{position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;
     text-align:center;overflow:hidden}
   #bootnoise{position:absolute;inset:0;opacity:.5}
@@ -105,43 +109,37 @@
     text-shadow:7px 7px 0 var(--pink),14px 14px 0 var(--cyan)}
   #boot .logo b{color:var(--ink);background:var(--yellow);padding:0 .05em}
   #boot .tag{font-family:"DM Mono";letter-spacing:.5em;text-transform:uppercase;
-    font-size:clamp(9px,1.5vw,13px);color:var(--bone);opacity:.8;margin-top:22px}
+    font-size:clamp(9px,1.5vw,13px);opacity:.8;margin-top:22px}
   #powerbtn{margin-top:38px;font-family:"Anton";font-size:clamp(18px,2.6vw,26px);
     text-transform:uppercase;letter-spacing:.06em;color:var(--ink);background:var(--yellow);
     border:none;padding:.7em 1.4em .58em;cursor:pointer;transform:skewX(-6deg);
     box-shadow:6px 6px 0 var(--pink);transition:transform .08s,box-shadow .08s}
   #powerbtn span{display:inline-block;transform:skewX(6deg)}
-  #powerbtn:hover{box-shadow:9px 9px 0 var(--pink)}
   #powerbtn:active{transform:skewX(-6deg) translate(4px,4px);box-shadow:2px 2px 0 var(--pink)}
   #powerbtn:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
-  #boot .count{font-family:"DM Mono";font-size:12px;letter-spacing:.3em;color:var(--bone);
-    opacity:.55;margin-top:26px;text-transform:uppercase}
+  #boot .count{font-family:"DM Mono";font-size:11px;letter-spacing:.2em;opacity:.55;margin-top:26px;
+    text-transform:uppercase;line-height:2}
 
-  @media (max-width:560px){
-    #controls .ctl{width:42px;height:42px}
-    #chyron{bottom:clamp(70px,12vh,90px)}
-  }
+  @media (max-width:560px){ #chyron{bottom:clamp(74px,13vh,96px)} .ctl{width:42px;height:42px} }
   @media (prefers-reduced-motion:reduce){
     #chyron{transition:opacity .3s}
-    .liverec::before,#clock .cln,#tune-label b{animation:none}
+    .liverec::before{animation:none}
   }
 </style>
 </head>
 <body>
-  <div id="stage" aria-hidden="true">
+  <div id="stage">
     <div id="player-wrap"></div>
     <canvas id="static"></canvas>
-    <div id="tune-label"><div>PLEASE STAND BY&nbsp;<b>…</b></div></div>
+    <div id="tune"><div><div>Please stand by</div><div class="err" id="errmsg"></div></div></div>
     <div id="guard"></div>
 
     <div id="bug">
-      <div>
-        <div class="mark">M<b>H</b>TV</div>
-        <div class="sub"><span class="liverec">On Air</span> · Music Television</div>
-      </div>
+      <div class="mark">M<b>H</b>TV</div>
+      <div class="sub"><span class="liverec">On Air</span> · Music Television</div>
     </div>
 
-    <div id="clock" aria-hidden="true">--<span class="cln">:</span>--</div>
+    <div id="clock">--:--</div>
 
     <div id="chyron">
       <div class="artist"><span id="cy-artist">ARTIST</span></div><br>
@@ -151,6 +149,7 @@
     </div>
 
     <div id="controls">
+      <button class="ctl" id="fixbtn" title="Fix this track's video link" aria-label="Fix this track">⚙</button>
       <button class="ctl" id="mutebtn" title="Mute / unmute" aria-label="Mute or unmute">
         <svg id="mute-ico" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-1 7-4.6 7-8.8s-3-7.8-7-8.8z"/></svg>
       </button>
@@ -158,65 +157,87 @@
         <svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
       </button>
     </div>
+
+    <!-- fix-track panel -->
+    <div id="fix">
+      <div class="card">
+        <h2>Fix this track</h2>
+        <div class="now" id="fix-now"></div>
+        <label for="fix-url">Paste the YouTube link or video ID</label>
+        <input id="fix-url" type="text" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" spellcheck="false">
+        <div class="row">
+          <button id="fix-save">Save &amp; play</button>
+          <button class="ghost" id="fix-reset">Undo fix</button>
+          <button class="ghost" id="fix-close">Close</button>
+        </div>
+        <div class="hint">Fixes are saved in this browser, so the channel remembers them next time.
+        Open a song on YouTube, copy the address bar, paste it here.</div>
+      </div>
+    </div>
   </div>
 
-  <!-- power-on screen -->
   <div id="boot">
     <canvas id="bootnoise"></canvas>
     <div class="panel">
       <div class="logo">M<b>H</b>TV</div>
       <div class="tag">Music&nbsp;·&nbsp;HTML&nbsp;·&nbsp;Television</div>
       <button id="powerbtn"><span>▶ &nbsp;Turn on the TV</span></button>
-      <div class="count" id="loadmsg">30 videos loaded · shuffled · no skipping</div>
+      <div class="count">29 videos · shuffled · no skipping<br>Must be opened over http://localhost — not a file:// path</div>
     </div>
   </div>
 
 <script>
 /* ============================================================
-   PLAYLIST
-   Each track needs a YouTube video ID (the part after ?v= in a
-   youtube.com URL, or after youtu.be/). If a video won't play
-   or shows "unavailable", it's a wrong/embed-blocked ID — swap it:
-   open the song on YouTube, copy the 11-char ID, paste it below.
-   Bad or blocked videos auto-skip to the next track on their own.
+   PLAYLIST — v: true means the ID was verified against the
+   artist's official YouTube channel. v: false are best guesses;
+   use the ⚙ button in the corner to paste a working link, and
+   the channel will remember it.
    ============================================================ */
 const PLAYLIST = [
-  {artist:"Michael Jackson", title:"Don't Stop 'Til You Get Enough", album:"Off the Wall", year:1979, id:"yURRmWtbTbo"},
-  {artist:"Michael Jackson", title:"Rock with You",                  album:"Off the Wall", year:1979, id:"3Y8VBxlG7ho"},
-  {artist:"Michael Jackson", title:"The Girl Is Mine",               album:"Thriller",     year:1982, id:"pAJEZgHfQOc"},
-  {artist:"Michael Jackson", title:"Thriller",                       album:"Thriller",     year:1982, id:"sOnqjkJTMaA"},
-  {artist:"Michael Jackson", title:"Beat It",                        album:"Thriller",     year:1982, id:"oRdxUFDoQe0"},
-  {artist:"Michael Jackson", title:"Billie Jean",                    album:"Thriller",     year:1982, id:"Zi_XLOBDo_Y"},
-  {artist:"Michael Jackson", title:"Human Nature",                   album:"Thriller",     year:1982, id:"_2NoxKZgv-g"},
-  {artist:"Michael Jackson", title:"P.Y.T. (Pretty Young Thing)",    album:"Thriller",     year:1982, id:"1lyu1KKwC74"},
-  {artist:"Michael Jackson", title:"Bad",                            album:"Bad",          year:1987, id:"dsUXAEzaC3Q"},
-  {artist:"Michael Jackson", title:"The Way You Make Me Feel",       album:"Bad",          year:1987, id:"HzZ_urpj4As"},
-  {artist:"Michael Jackson", title:"Man in the Mirror",              album:"Bad",          year:1987, id:"PivWY9wn5ps"},
-  {artist:"Michael Jackson", title:"Dirty Diana",                    album:"Bad",          year:1987, id:"yUi_S6YParE"},
-  {artist:"Michael Jackson", title:"Smooth Criminal",               album:"Bad",          year:1987, id:"h_D3VFfhvs4"},
-  {artist:"Michael Jackson", title:"In the Closet",                  album:"Dangerous",    year:1991, id:"04CXJICwLGc"},
-  {artist:"Michael Jackson", title:"Remember the Time",              album:"Dangerous",    year:1991, id:"LejfEIsjE0g"},
-  {artist:"Michael Jackson", title:"Heal the World",                 album:"Dangerous",    year:1991, id:"BWf-eARnf6U"},
-  {artist:"Michael Jackson", title:"Black or White",                 album:"Dangerous",    year:1991, id:"F2AitTPI5U0"},
-  {artist:"Michael Jackson", title:"You Are Not Alone",              album:"HIStory",      year:1995, id:"nBKCLcs6qhc"},
-  {artist:"Michael Jackson", title:"Earth Song",                     album:"HIStory",      year:1995, id:"XAi3VTSdTxU"},
-  {artist:"Michael Jackson", title:"Heaven Can Wait",                album:"Invincible",   year:2001, id:"5rL9yz9J6uA"},
-  {artist:"Michael Jackson", title:"Chicago",                        album:"Xscape",       year:2014, id:"7Dj1uz2jO1o"},
-  {artist:"Phil Collins",    title:"Another Day in Paradise",        album:"...But Seriously", year:1989, id:"Kk-VvySYUw4"},
-  {artist:"Def Leppard",     title:"Pour Some Sugar on Me",          album:"Hysteria",     year:1987, id:"0UIB9Y4OW6c"},
-  {artist:"MGMT",            title:"Kids",                           album:"Oracular Spectacular", year:2008, id:"vd9v3D6mbrM"},
-  {artist:"Daryl Hall & John Oates", title:"You Make My Dreams (Come True)", album:"Voices", year:1980, id:"PBsjBQmAj8g"},
-  {artist:"Daryl Hall & John Oates", title:"Maneater",              album:"H2O",          year:1982, id:"Q9UvFHfg_pQ"},
-  {artist:"Daryl Hall & John Oates", title:"Rich Girl",             album:"Bigger Than Both of Us", year:1976, id:"eL2sQd2wYP0"},
-  {artist:"Shakira ft. Wyclef Jean", title:"Hips Don't Lie",        album:"Oral Fixation, Vol. 2", year:2006, id:"DUT5rEU6pqM"},
-  {artist:"Lord Huron",      title:"The Night We Met",               album:"Strange Trails", year:2015, id:"KtlgYxa6BMU"},
-  {artist:"The Jackson 5",   title:"I Want You Back",                album:"Diana Ross Presents The Jackson 5", year:1969, id:"s3Q80mk7bxE"},
+  // ---- Michael Jackson ----
+  {a:"Michael Jackson", t:"Don't Stop 'Til You Get Enough", al:"Off the Wall", y:1979, id:"yURRmWtbTbo", v:true},
+  {a:"Michael Jackson", t:"Rock with You",                  al:"Off the Wall", y:1979, id:"5X-Mrc2l1d0", v:true},
+  {a:"Michael Jackson", t:"The Girl Is Mine",               al:"Thriller",     y:1982, id:"pAJEZgHfQOc", v:false},
+  {a:"Michael Jackson", t:"Thriller",                       al:"Thriller",     y:1982, id:"sOnqjkJTMaA", v:true},
+  {a:"Michael Jackson", t:"Beat It",                        al:"Thriller",     y:1982, id:"oRdxUFDoQe0", v:true},
+  {a:"Michael Jackson", t:"Billie Jean",                    al:"Thriller",     y:1982, id:"Zi_XLOBDo_Y", v:true},
+  {a:"Michael Jackson", t:"Human Nature",                   al:"Thriller",     y:1982, id:"_2NoxKZgv-g", v:false},
+  {a:"Michael Jackson", t:"Bad",                            al:"Bad",          y:1987, id:"Sd4SJVsTulc", v:true},
+  {a:"Michael Jackson", t:"The Way You Make Me Feel",       al:"Bad",          y:1987, id:"HzZ_urpj4As", v:false},
+  {a:"Michael Jackson", t:"Man in the Mirror",              al:"Bad",          y:1987, id:"PivWY9wn5ps", v:false},
+  {a:"Michael Jackson", t:"Dirty Diana",                    al:"Bad",          y:1987, id:"yUi_S6YParE", v:false},
+  {a:"Michael Jackson", t:"Smooth Criminal",                al:"Bad",          y:1987, id:"h_D3VFfhvs4", v:true},
+  {a:"Michael Jackson", t:"In the Closet",                  al:"Dangerous",    y:1991, id:"4qLY0vbrT8Q", v:true},
+  {a:"Michael Jackson", t:"Remember the Time",              al:"Dangerous",    y:1991, id:"LeiFF0gvqcc", v:true},
+  {a:"Michael Jackson", t:"Heal the World",                 al:"Dangerous",    y:1991, id:"BWf-eARnf6U", v:true},
+  {a:"Michael Jackson", t:"Black or White",                 al:"Dangerous",    y:1991, id:"pTFE8cirkdQ", v:true},
+  {a:"Michael Jackson", t:"You Are Not Alone",              al:"HIStory",      y:1995, id:"pAyKJAtDNCw", v:true},
+  {a:"Michael Jackson", t:"Earth Song",                     al:"HIStory",      y:1995, id:"XAi3VTSdTxU", v:true},
+  {a:"Michael Jackson", t:"Heaven Can Wait",                al:"Invincible",   y:2001, id:"5rL9yz9J6uA", v:false},
+  {a:"Michael Jackson", t:"Chicago",                        al:"Xscape",       y:2014, id:"7Dj1uz2jO1o", v:false},
+  // ---- everyone else ----
+  {a:"Phil Collins",    t:"Another Day in Paradise",        al:"...But Seriously", y:1989, id:"Qt2mbGP6vFI", v:true},
+  {a:"Def Leppard",     t:"Pour Some Sugar on Me",          al:"Hysteria",     y:1987, id:"0UIB9Y4OFPs", v:true},
+  {a:"MGMT",            t:"Kids",                           al:"Oracular Spectacular", y:2008, id:"fe4EK4HSPkI", v:true},
+  {a:"Daryl Hall & John Oates", t:"You Make My Dreams (Come True)", al:"Voices", y:1980, id:"EErSKhC0CZs", v:true},
+  {a:"Daryl Hall & John Oates", t:"Maneater",               al:"H2O",          y:1982, id:"yRYFKcMa_Ek", v:true},
+  {a:"Daryl Hall & John Oates", t:"Rich Girl",              al:"Bigger Than Both of Us", y:1976, id:"AmHE65RAkSY", v:true},
+  {a:"Shakira ft. Wyclef Jean", t:"Hips Don't Lie",         al:"Oral Fixation, Vol. 2", y:2006, id:"DUT5rEU6pqM", v:true},
+  {a:"Lord Huron",      t:"The Night We Met",               al:"Strange Trails", y:2015, id:"wGF7PswOENQ", v:true},
+  {a:"The Jackson 5",   t:"I Want You Back",                al:"Diana Ross Presents The Jackson 5", y:1969, id:"79eyuz8z6Cg", v:false},
 ];
 
-/* ---------- state ---------- */
-let player, order = [], ptr = 0, announced = false, chyronTimer = null;
+/* ---------- saved fixes ---------- */
+const STORE = "mhtv-fixes";
+let fixes = {};
+try { fixes = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e){ fixes = {}; }
+const saveFixes = ()=>{ try{ localStorage.setItem(STORE, JSON.stringify(fixes)); }catch(e){} };
+const key   = i => PLAYLIST[i].a + "|" + PLAYLIST[i].t;
+const idFor = i => fixes[key(i)] || PLAYLIST[i].id;
 
-/* Fisher–Yates shuffle of indices */
+/* ---------- state ---------- */
+let player, order = [], ptr = 0, announced = false, chyronTimer = null, failStreak = 0;
+
 function shuffle(){
   order = PLAYLIST.map((_,i)=>i);
   for(let i=order.length-1;i>0;i--){
@@ -224,17 +245,16 @@ function shuffle(){
     [order[i],order[j]] = [order[j],order[i]];
   }
 }
-const track = ()=> PLAYLIST[order[ptr]];
+const idx   = ()=> order[ptr];
+const track = ()=> PLAYLIST[idx()];
 
-/* ---------- YouTube IFrame API ---------- */
+/* ---------- YouTube API ---------- */
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 document.head.appendChild(tag);
 
 window.onYouTubeIframeAPIReady = function(){
   shuffle();
-  // Build the iframe ourselves so we can force a referrer policy + origin.
-  // (Fixes YouTube "Error 153" — the player needs to know where it's embedded.)
   const iframe = document.createElement('iframe');
   iframe.id = 'player';
   iframe.setAttribute('frameborder','0');
@@ -242,44 +262,53 @@ window.onYouTubeIframeAPIReady = function(){
   iframe.setAttribute('allow','autoplay; encrypted-media; fullscreen; picture-in-picture');
   const p = new URLSearchParams({
     enablejsapi:'1', autoplay:'0', controls:'0', disablekb:'1', fs:'0', rel:'0',
-    playsinline:'1', modestbranding:'1', iv_load_policy:'3', cc_load_policy:'0',
-    origin: location.origin
+    playsinline:'1', modestbranding:'1', iv_load_policy:'3', origin: location.origin
   });
-  iframe.src = 'https://www.youtube.com/embed/' + track().id + '?' + p.toString();
+  iframe.src = 'https://www.youtube.com/embed/' + idFor(0) + '?' + p.toString();
   document.getElementById('player-wrap').appendChild(iframe);
-  player = new YT.Player('player',{
-    events:{ onStateChange:onState, onError:onError }
-  });
+  player = new YT.Player('player',{ events:{ onStateChange:onState, onError:onError } });
+};
+
+const ERRORS = {
+  2:  "Error 2 — that video ID isn't valid. Press ⚙ to paste the right link.",
+  5:  "Error 5 — this video can't play in an HTML5 player.",
+  100:"Error 100 — that video was removed or made private. Press ⚙ to paste a new link.",
+  101:"Error 101 — the owner blocked this video from playing outside YouTube. Press ⚙ and try a different upload.",
+  150:"Error 150 — the owner blocked this video from playing outside YouTube. Press ⚙ and try a different upload.",
+  153:"Error 153 — no referrer. Open this page over http://localhost, not as a file:// path."
 };
 
 function onState(e){
   if(e.data === YT.PlayerState.PLAYING){
+    failStreak = 0;
     stopTuning();
     if(!announced){ showChyron(); announced = true; }
   } else if(e.data === YT.PlayerState.ENDED){
     next();
   }
 }
-function onError(){ // wrong ID, private, or embed-blocked → move on
-  startTuning();
-  setTimeout(next, 1300);
+
+function onError(e){
+  const t = track();
+  startTuning((ERRORS[e.data] || ("Error " + e.data)) + "<br>" + t.a + " — " + t.t);
+  failStreak++;
+  if(failStreak >= PLAYLIST.length){ return; }   // everything failed; stop looping
+  setTimeout(next, 2600);
 }
 
-/* ---------- transport (advance only; never user-skippable) ---------- */
 function next(){
   ptr++;
-  if(ptr >= order.length){ shuffle(); ptr = 0; }   // loop forever, reshuffled
+  if(ptr >= order.length){ shuffle(); ptr = 0; }
   announced = false;
   hideChyron();
   startTuning();
-  player.loadVideoById(track().id);
+  player.loadVideoById(idFor(idx()));
 }
 
 function begin(){
-  shuffle && null;
   announced = false;
   startTuning();
-  player.loadVideoById(track().id);
+  player.loadVideoById(idFor(idx()));
   player.unMute();
   player.setVolume(100);
   player.playVideo();
@@ -288,81 +317,120 @@ function begin(){
 /* ---------- chyron ---------- */
 function showChyron(){
   const t = track();
-  document.getElementById('cy-artist').textContent = t.artist.toUpperCase();
-  document.getElementById('cy-song').textContent   = t.title;
-  document.getElementById('cy-meta').textContent   = t.album + " · " + t.year;
+  document.getElementById('cy-artist').textContent = t.a.toUpperCase();
+  document.getElementById('cy-song').textContent   = t.t;
+  document.getElementById('cy-meta').textContent   = t.al + " · " + t.y;
   const el = document.getElementById('chyron');
   el.classList.add('show');
   clearTimeout(chyronTimer);
   chyronTimer = setTimeout(()=> el.classList.remove('show'), 7000);
 }
-function hideChyron(){ document.getElementById('chyron').classList.remove('show'); }
+const hideChyron = ()=> document.getElementById('chyron').classList.remove('show');
 
-/* ---------- tuning static ---------- */
-const sCanvas = document.getElementById('static');
-const sCtx = sCanvas.getContext('2d');
+/* ---------- static ---------- */
+const sCanvas = document.getElementById('static'), sCtx = sCanvas.getContext('2d');
 let staticRAF = null;
-function sizeStatic(){ sCanvas.width = Math.floor(innerWidth/3); sCanvas.height = Math.floor(innerHeight/3); }
+const sizeStatic = ()=>{ sCanvas.width = Math.floor(innerWidth/3); sCanvas.height = Math.floor(innerHeight/3); };
 function drawStatic(){
   const w=sCanvas.width,h=sCanvas.height,img=sCtx.createImageData(w,h),d=img.data;
   for(let i=0;i<d.length;i+=4){ const v=Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
   sCtx.putImageData(img,0,0);
   staticRAF = requestAnimationFrame(drawStatic);
 }
-function startTuning(){
+function startTuning(msg){
   sCanvas.classList.add('on');
-  document.getElementById('tune-label').classList.add('on');
+  document.getElementById('errmsg').innerHTML = msg || "";
+  document.getElementById('tune').classList.add('on');
   if(!staticRAF && !matchMedia('(prefers-reduced-motion:reduce)').matches) drawStatic();
 }
 function stopTuning(){
   sCanvas.classList.remove('on');
-  document.getElementById('tune-label').classList.remove('on');
+  document.getElementById('tune').classList.remove('on');
   cancelAnimationFrame(staticRAF); staticRAF = null;
 }
 sizeStatic(); addEventListener('resize', sizeStatic);
 
-/* ---------- boot noise (power screen) ---------- */
-const bCanvas = document.getElementById('bootnoise');
-const bCtx = bCanvas.getContext('2d');
-function sizeBoot(){ bCanvas.width = Math.floor(innerWidth/3); bCanvas.height = Math.floor(innerHeight/3); }
-let bootRAF=null;
+/* ---------- boot noise ---------- */
+const bCanvas = document.getElementById('bootnoise'), bCtx = bCanvas.getContext('2d');
+const sizeBoot = ()=>{ bCanvas.width = Math.floor(innerWidth/3); bCanvas.height = Math.floor(innerHeight/3); };
+let bootRAF = null;
 function bootDraw(){
   const w=bCanvas.width,h=bCanvas.height,img=bCtx.createImageData(w,h),d=img.data;
   for(let i=0;i<d.length;i+=4){ const v=Math.random()*90|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
   bCtx.putImageData(img,0,0);
-  bootRAF=requestAnimationFrame(bootDraw);
+  bootRAF = requestAnimationFrame(bootDraw);
 }
 sizeBoot(); addEventListener('resize', sizeBoot);
 if(!matchMedia('(prefers-reduced-motion:reduce)').matches) bootDraw();
 
 /* ---------- clock ---------- */
 setInterval(()=>{
-  const n=new Date();
-  const hh=String(n.getHours()).padStart(2,'0');
-  const mm=String(n.getMinutes()).padStart(2,'0');
-  document.getElementById('clock').innerHTML = hh+'<span class="cln">:</span>'+mm;
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ":" + String(n.getMinutes()).padStart(2,'0');
 },1000);
+
+/* ---------- fix panel ---------- */
+const fixPanel = document.getElementById('fix');
+function parseId(s){
+  s = (s||"").trim();
+  if(/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  const m = s.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function openFix(){
+  const t = track();
+  document.getElementById('fix-now').innerHTML =
+    t.a + " — " + t.t + "<br>Currently using ID: " + idFor(idx());
+  document.getElementById('fix-url').value = "";
+  fixPanel.classList.add('on');
+  document.getElementById('fix-url').focus();
+}
+const closeFix = ()=> fixPanel.classList.remove('on');
+document.getElementById('fixbtn').addEventListener('click', openFix);
+document.getElementById('fix-close').addEventListener('click', closeFix);
+document.getElementById('fix-save').addEventListener('click', ()=>{
+  const id = parseId(document.getElementById('fix-url').value);
+  if(!id){ document.getElementById('fix-url').style.borderColor = "#ff2d95"; return; }
+  fixes[key(idx())] = id; saveFixes();
+  closeFix(); announced = false; failStreak = 0; startTuning();
+  player.loadVideoById(id); player.playVideo();
+});
+document.getElementById('fix-reset').addEventListener('click', ()=>{
+  delete fixes[key(idx())]; saveFixes();
+  closeFix(); announced = false; startTuning();
+  player.loadVideoById(track().id); player.playVideo();
+});
+document.getElementById('fix-url').addEventListener('keydown', e=>{
+  if(e.key === "Enter") document.getElementById('fix-save').click();
+  if(e.key === "Escape") closeFix();
+});
 
 /* ---------- controls ---------- */
 document.getElementById('mutebtn').addEventListener('click',()=>{
   if(!player) return;
-  const ico=document.getElementById('mute-ico');
-  if(player.isMuted()){ player.unMute(); ico.innerHTML='<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-1 7-4.6 7-8.8s-3-7.8-7-8.8z"/>'; }
-  else{ player.mute(); ico.innerHTML='<path d="M3 9v6h4l5 5V4L7 9H3zm18.5-1.9L20.1 5.7 17.8 8 15.5 5.7 14.1 7.1 16.4 9.4 14.1 11.7 15.5 13.1 17.8 10.8 20.1 13.1 21.5 11.7 19.2 9.4z"/>'; }
+  const ico = document.getElementById('mute-ico');
+  if(player.isMuted()){
+    player.unMute();
+    ico.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-1 7-4.6 7-8.8s-3-7.8-7-8.8z"/>';
+  } else {
+    player.mute();
+    ico.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm18.5-1.9L20.1 5.7 17.8 8 15.5 5.7 14.1 7.1 16.4 9.4 14.1 11.7 15.5 13.1 17.8 10.8 20.1 13.1 21.5 11.7 19.2 9.4z"/>';
+  }
 });
 document.getElementById('fsbtn').addEventListener('click',()=>{
-  if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
-  else{ document.exitFullscreen?.(); }
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
 });
 
 /* ---------- power on ---------- */
 document.getElementById('powerbtn').addEventListener('click',()=>{
-  const boot=document.getElementById('boot');
-  boot.style.transition='opacity .35s'; boot.style.opacity='0';
-  cancelAnimationFrame(bootRAF); bootRAF=null;
+  const boot = document.getElementById('boot');
+  boot.style.transition = 'opacity .35s'; boot.style.opacity = '0';
+  cancelAnimationFrame(bootRAF); bootRAF = null;
   setTimeout(()=> boot.remove(), 380);
   document.documentElement.requestFullscreen?.().catch(()=>{});
-  const wait=setInterval(()=>{ if(player && player.loadVideoById){ clearInterval(wait); begin(); } },120);
+  const wait = setInterval(()=>{ if(player && player.loadVideoById){ clearInterval(wait); begin(); } },120);
 });
 </script>
 </body>
