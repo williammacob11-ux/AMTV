@@ -1,488 +1,359 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PULSE — Music Television</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MHTV — Music HTML Television</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --void:#08080b; --void2:#0d0d12;
-  --ink:#f3f4f7; --mute:#9a9ca6; --faint:#6a6c76;
-  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.14);
-  --glass:rgba(255,255,255,.045);
-  --tally:#ff2d43; --accent:#5e60ce; --accent2:#48bfe3;
-  --shadow:0 24px 60px rgba(0,0,0,.6); --ease:cubic-bezier(.22,.61,.36,1);
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--void);color:var(--ink);
-  font-family:-apple-system,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.01em;}
-.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;transition:background .9s var(--ease);
-  background:radial-gradient(1100px 620px at 78% -8%, color-mix(in srgb,var(--accent) 26%, transparent), transparent 60%),
-   radial-gradient(900px 600px at 8% 4%, color-mix(in srgb,var(--accent2) 18%, transparent), transparent 62%),
-   linear-gradient(180deg,var(--void2),var(--void) 46%);}
-.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-.app{position:relative;z-index:2}
+  /* ============================================================
+     MHTV — a fake 24/7 music-video channel.
+     Palette:  ink #0a0a0a · hot yellow #ffe400 · shock pink #ff2d95
+               cyan #16e0ff · bone #f4f2e9
+     Display: Anton (chyron/logo) · Oswald (titles) · DM Mono (data)
+     ============================================================ */
+  :root{
+    --ink:#0a0a0a; --yellow:#ffe400; --pink:#ff2d95; --cyan:#16e0ff; --bone:#f4f2e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--bone);
+    font-family:"Oswald",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 
-.bar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:26px;padding:16px clamp(18px,4vw,54px);
-  backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);
-  background:linear-gradient(180deg,rgba(8,8,11,.86),rgba(8,8,11,.32));border-bottom:1px solid var(--line);}
-.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:20px;letter-spacing:.14em;cursor:pointer}
-.bug{width:11px;height:11px;border-radius:50%;background:var(--tally);box-shadow:0 0 0 4px rgba(255,45,67,.18),0 0 16px var(--tally);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-nav{display:flex;gap:6px;margin-left:6px}
-.tab{border:0;background:transparent;color:var(--mute);font:inherit;font-size:15px;font-weight:600;padding:8px 15px;border-radius:100px;cursor:pointer;transition:.2s}
-.tab:hover{color:var(--ink)}
-.tab.on{color:var(--ink);background:var(--glass);box-shadow:inset 0 0 0 1px var(--line2)}
-.search-wrap{margin-left:auto;display:flex;align-items:center;gap:10px}
-.search-wrap input{background:var(--glass);border:1px solid var(--line);color:var(--ink);padding:9px 15px;border-radius:100px;font:inherit;font-size:14px;width:190px;transition:.25s;outline:none}
-.search-wrap input:focus{width:250px;border-color:var(--line2);background:rgba(255,255,255,.07)}
-.mini{display:flex;align-items:center;gap:11px;padding:6px 6px 6px 14px;border-radius:100px;background:var(--glass);border:1px solid var(--line);cursor:pointer;max-width:230px;transition:.25s}
-.mini:hover{border-color:var(--line2)}
-.mini .eq{display:flex;gap:2px;align-items:flex-end;height:15px}
-.mini .eq i{width:3px;background:var(--accent2);border-radius:2px;animation:eq .9s infinite ease-in-out}
-.mini .eq i:nth-child(2){animation-delay:.15s}.mini .eq i:nth-child(3){animation-delay:.3s}
-@keyframes eq{0%,100%{height:4px}50%{height:15px}}
-.mini .mt{overflow:hidden}
-.mini .mt b{display:block;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mini .mt span{display:block;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mini .pp{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#000;display:grid;place-items:center;flex:none}
+  /* ---------- video, scaled to COVER the whole screen ---------- */
+  #stage{position:fixed;inset:0;background:#000;overflow:hidden}
+  #player-wrap{position:absolute;inset:0;overflow:hidden}
+  #player{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;pointer-events:none}
+  #player iframe{width:100%;height:100%;display:block}
 
-.hero{position:relative;margin:clamp(14px,2vw,26px) clamp(18px,4vw,54px) 8px;height:min(58vh,540px);border-radius:26px;overflow:hidden;box-shadow:var(--shadow);isolation:isolate}
-.hero canvas{position:absolute;inset:0;width:100%;height:100%}
-.hero .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,6,9,.9) 0%,rgba(6,6,9,.55) 38%,transparent 70%),linear-gradient(0deg,rgba(6,6,9,.9),transparent 55%)}
-.hero .inner{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(24px,4vw,54px);gap:16px;max-width:640px}
-.eyebrow{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
-.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--tally)}
-.hero h1{margin:0;font-size:clamp(38px,6vw,72px);line-height:.94;font-weight:800;letter-spacing:-.03em;text-shadow:0 4px 30px rgba(0,0,0,.5)}
-.hero .meta{display:flex;gap:14px;align-items:center;color:var(--mute);font-size:14.5px;font-weight:600;flex-wrap:wrap}
-.hero .meta .pill{padding:3px 10px;border:1px solid var(--line2);border-radius:6px;font-size:12px;color:var(--ink)}
-.hero .cta{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
-.btn{border:0;font:inherit;font-weight:700;font-size:15px;padding:13px 24px;border-radius:100px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .18s var(--ease),filter .2s}
-.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(0)}
-.btn.play{background:var(--ink);color:#0a0a0a}.btn.play:hover{filter:brightness(1.05)}
-.btn.ghost{background:rgba(255,255,255,.1);color:var(--ink);border:1px solid var(--line2);backdrop-filter:blur(8px)}
-.hdots{position:absolute;bottom:20px;right:24px;display:flex;gap:7px;z-index:3}
-.hdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.28);cursor:pointer;transition:.2s}
-.hdots i.on{background:var(--ink);width:20px;border-radius:4px}
+  /* Invisible guard: eats all clicks on the video so nobody can skip/pause it. */
+  #guard{position:absolute;inset:0;z-index:20;cursor:default}
 
-.shelf{margin:34px 0}
-.shelf h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;padding:0 clamp(18px,4vw,54px);display:flex;align-items:baseline;gap:12px}
-.shelf h2 small{font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.row{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;padding:6px clamp(18px,4vw,54px) 20px;scroll-snap-type:x proximity;scrollbar-width:none}
-.row::-webkit-scrollbar{display:none}
+  /* ---------- channel bug (logo) top-left ---------- */
+  #bug{position:absolute;top:clamp(14px,2.2vw,30px);left:clamp(14px,2.2vw,30px);
+    z-index:40;display:flex;align-items:center;gap:9px;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));user-select:none;pointer-events:none}
+  #bug .mark{font-family:"Anton";font-size:clamp(26px,3.6vw,44px);line-height:.8;
+    letter-spacing:-.03em;color:var(--yellow);
+    background:var(--ink);padding:.16em .18em .1em;transform:skewX(-6deg);
+    box-shadow:4px 4px 0 var(--pink)}
+  #bug .mark b{color:var(--ink);background:var(--yellow);padding:0 .06em;margin-left:.04em}
+  #bug .sub{font-family:"DM Mono";font-size:clamp(8px,1vw,11px);letter-spacing:.32em;
+    text-transform:uppercase;color:var(--bone);opacity:.85;margin-top:2px}
+  .liverec{display:inline-flex;align-items:center;gap:5px}
+  .liverec::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pink);
+    animation:blink 1.4s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:0}}
 
-.card{flex:none;width:230px;scroll-snap-align:start;cursor:pointer;transition:transform .28s var(--ease)}
-.card:hover,.card:focus-visible{transform:translateY(-6px) scale(1.03);outline:none;z-index:5}
-.poster{position:relative;height:150px;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);transition:box-shadow .3s}
-.card:hover .poster{box-shadow:0 22px 48px rgba(0,0,0,.6),0 0 0 1px var(--line2),0 0 40px -6px var(--cg)}
-.poster .art{position:absolute;inset:0}
-.poster .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.poster .ptxt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;background:linear-gradient(0deg,rgba(0,0,0,.82),transparent 60%)}
-.poster .ptxt b{font-size:17px;font-weight:800;line-height:1.05;text-shadow:0 2px 8px rgba(0,0,0,.7)}
-.poster .ptxt span{font-size:12.5px;color:rgba(255,255,255,.86);font-weight:600;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.poster .chip{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.16)}
-.poster .dur{position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px)}
-.poster .go{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:.25s;background:rgba(0,0,0,.22)}
-.card:hover .go{opacity:1}
-.poster .go .pc{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.4);display:grid;place-items:center}
-.cmeta{padding:9px 3px 0;font-size:12px;color:var(--mute);font-weight:600;display:flex;justify-content:space-between;gap:8px}
-.cmeta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* ---------- broadcast clock top-right ---------- */
+  #clock{position:absolute;top:clamp(14px,2.2vw,30px);right:clamp(14px,2.2vw,30px);z-index:40;
+    font-family:"DM Mono";font-size:clamp(13px,1.5vw,18px);letter-spacing:.12em;
+    color:var(--bone);text-shadow:0 2px 6px rgba(0,0,0,.8);pointer-events:none}
+  #clock .cln{animation:blink 1.06s steps(2,end) infinite}
 
-.stage{position:fixed;inset:0;z-index:60;background:var(--void);display:none;flex-direction:column;overflow-y:auto;animation:fade .35s var(--ease)}
-.stage.show{display:flex}
-@keyframes fade{from{opacity:0}to{opacity:1}}
-.stagebg{position:absolute;inset:0;z-index:0;pointer-events:none;transition:background .9s var(--ease);
-  background:radial-gradient(1200px 700px at 50% -10%, color-mix(in srgb,var(--accent) 34%, transparent), transparent 62%),
-   radial-gradient(900px 700px at 90% 110%, color-mix(in srgb,var(--accent2) 22%, transparent), transparent 60%),var(--void)}
-.topline{position:relative;z-index:3;display:flex;align-items:center;gap:14px;padding:18px clamp(20px,4vw,44px)}
-.close{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid var(--line2);color:#fff;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(10px);transition:.2s;font-size:16px}
-.close:hover{background:rgba(255,255,255,.2)}
-.chbug{margin-left:auto;font-weight:800;letter-spacing:.1em;font-size:14px;opacity:.75;display:none}
-.onair{display:none;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:.18em;padding:8px 14px;border-radius:100px;background:rgba(255,45,67,.14);border:1px solid rgba(255,45,67,.4);color:#ff8a97}
-.stage.live .onair{display:flex}.stage.live .chbug{display:block}
-.stage:not(.live) .topline .spacer{margin-left:auto}
+  /* ---------- the SIGNATURE: MTV-style lower-third chyron ---------- */
+  #chyron{position:absolute;left:clamp(16px,3vw,46px);bottom:clamp(30px,7vh,74px);z-index:45;
+    max-width:min(560px,80vw);pointer-events:none;
+    transform:translateX(-118%);opacity:0;transition:transform .55s cubic-bezier(.2,.9,.25,1),opacity .3s}
+  #chyron.show{transform:translateX(0);opacity:1}
+  #chyron .artist{font-family:"Anton";font-size:clamp(26px,4.4vw,54px);line-height:.9;
+    color:var(--ink);background:var(--yellow);display:inline-block;
+    padding:.1em .34em .04em;transform:skewX(-6deg);text-transform:uppercase;
+    box-shadow:5px 5px 0 rgba(0,0,0,.55)}
+  #chyron .artist span{display:inline-block;transform:skewX(6deg)}
+  #chyron .song{font-family:"Oswald";font-weight:700;font-size:clamp(16px,2.4vw,28px);
+    color:var(--bone);background:var(--ink);display:inline-block;margin-top:8px;
+    padding:.22em .5em;letter-spacing:.01em;box-shadow:5px 5px 0 rgba(0,0,0,.45)}
+  #chyron .meta{font-family:"DM Mono";font-size:clamp(10px,1.2vw,13px);letter-spacing:.18em;
+    text-transform:uppercase;margin-top:9px;color:var(--ink);background:var(--cyan);
+    display:inline-block;padding:.35em .7em;transform:skewX(-6deg)}
+  #chyron .meta span{display:inline-block;transform:skewX(6deg)}
+  #chyron .bar{height:5px;width:clamp(120px,26vw,240px);margin-top:11px;
+    background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan))}
 
-.screen{position:relative;z-index:2;display:grid;place-items:center;padding:0 clamp(16px,4vw,44px)}
-.videoframe{position:relative;width:min(1180px,95vw);aspect-ratio:16/9;max-height:62vh;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px var(--line)}
-.videoframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  /* ---------- tuning static (canvas) shown between tracks ---------- */
+  #static{position:absolute;inset:0;z-index:30;opacity:0;transition:opacity .18s;
+    pointer-events:none;background:#000}
+  #static.on{opacity:1}
+  #tune-label{position:absolute;inset:0;z-index:31;display:none;place-items:center;
+    font-family:"DM Mono";letter-spacing:.4em;color:var(--bone);text-transform:uppercase;
+    font-size:clamp(12px,1.6vw,16px);text-shadow:0 0 12px rgba(0,0,0,.9);pointer-events:none}
+  #tune-label.on{display:grid}
+  #tune-label b{animation:blink 1s steps(2,end) infinite;font-weight:500}
 
-.lower{position:relative;z-index:3;padding:20px clamp(20px,4vw,44px) 4px;max-width:1180px;margin:0 auto;width:100%}
-.nowtag{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
-.lower h2{margin:0;font-size:clamp(26px,4vw,44px);font-weight:800;letter-spacing:-.03em;line-height:.98}
-.lower .sub{margin-top:8px;color:var(--mute);font-size:15px;font-weight:600;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.sub .pill{padding:3px 9px;border:1px solid var(--line2);border-radius:6px;font-size:12px;color:var(--ink)}
-.transport{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
-.tbtn{height:46px;min-width:46px;padding:0 14px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid var(--line2);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:.2s;backdrop-filter:blur(8px);font:inherit;font-size:15px;font-weight:700}
-.tbtn:hover{background:rgba(255,255,255,.2)}
-.tbtn.icon{width:46px;padding:0;font-size:16px}
-.tbtn.act{color:var(--accent2);box-shadow:inset 0 0 0 1px var(--accent2)}
-.hint{color:var(--faint);font-size:12.5px;font-weight:600;max-width:260px;line-height:1.35}
-.transport .yt{margin-left:auto}
-.yt{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid var(--line2);transition:.2s}
-.yt:hover{background:rgba(255,255,255,.18)}
-.yt svg{color:#ff4757}
+  /* ---------- bottom controls: mute + fullscreen (NO skip) ---------- */
+  #controls{position:absolute;right:clamp(14px,2.2vw,28px);bottom:clamp(14px,2.2vw,28px);z-index:50;
+    display:flex;gap:10px}
+  .ctl{width:46px;height:46px;border:2px solid rgba(244,242,233,.5);background:rgba(10,10,10,.55);
+    color:var(--bone);border-radius:0;cursor:pointer;display:grid;place-items:center;
+    backdrop-filter:blur(3px);transition:transform .1s,border-color .15s,background .15s}
+  .ctl:hover{border-color:var(--yellow);background:rgba(10,10,10,.8)}
+  .ctl:active{transform:translateY(2px)}
+  .ctl:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+  .ctl svg{width:22px;height:22px;fill:currentColor}
 
-.upnext{position:relative;z-index:3;padding:24px clamp(20px,4vw,44px) 32px;max-width:1180px;margin:0 auto;width:100%}
-.upnext .lbl{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:12px}
-.qrow{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px}
-.qrow::-webkit-scrollbar{display:none}
-.qcard{flex:none;width:230px;display:flex;gap:11px;align-items:center;padding:8px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);cursor:pointer;transition:.2s}
-.qcard:hover{background:rgba(255,255,255,.1);border-color:var(--line2)}
-.qcard.now{border-color:var(--accent2);background:rgba(72,191,227,.1)}
-.qnum{width:20px;text-align:center;font-size:12px;font-weight:800;color:var(--faint);flex:none}
-.qcard.now .qnum{color:var(--accent2)}
-.qthumb{width:58px;height:40px;border-radius:8px;flex:none;overflow:hidden;background:#000}
-.qthumb img{width:100%;height:100%;object-fit:cover}
-.qcard b{font-size:13px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qcard span{font-size:11.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  /* ---------- power-on screen ---------- */
+  #boot{position:fixed;inset:0;z-index:100;background:#000;display:grid;place-items:center;
+    text-align:center;overflow:hidden}
+  #bootnoise{position:absolute;inset:0;opacity:.5}
+  #boot .panel{position:relative;z-index:2;padding:0 24px}
+  #boot .logo{font-family:"Anton";font-size:clamp(56px,13vw,150px);line-height:.82;
+    letter-spacing:-.04em;color:var(--yellow);transform:skewX(-6deg);
+    text-shadow:7px 7px 0 var(--pink),14px 14px 0 var(--cyan)}
+  #boot .logo b{color:var(--ink);background:var(--yellow);padding:0 .05em}
+  #boot .tag{font-family:"DM Mono";letter-spacing:.5em;text-transform:uppercase;
+    font-size:clamp(9px,1.5vw,13px);color:var(--bone);opacity:.8;margin-top:22px}
+  #powerbtn{margin-top:38px;font-family:"Anton";font-size:clamp(18px,2.6vw,26px);
+    text-transform:uppercase;letter-spacing:.06em;color:var(--ink);background:var(--yellow);
+    border:none;padding:.7em 1.4em .58em;cursor:pointer;transform:skewX(-6deg);
+    box-shadow:6px 6px 0 var(--pink);transition:transform .08s,box-shadow .08s}
+  #powerbtn span{display:inline-block;transform:skewX(6deg)}
+  #powerbtn:hover{box-shadow:9px 9px 0 var(--pink)}
+  #powerbtn:active{transform:skewX(-6deg) translate(4px,4px);box-shadow:2px 2px 0 var(--pink)}
+  #powerbtn:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+  #boot .count{font-family:"DM Mono";font-size:12px;letter-spacing:.3em;color:var(--bone);
+    opacity:.55;margin-top:26px;text-transform:uppercase}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;padding:8px clamp(18px,4vw,54px) 60px}
-.grid .card{width:auto}
-.searchhead{padding:26px clamp(18px,4vw,54px) 6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.fchip{border:1px solid var(--line2);background:var(--glass);color:var(--mute);font:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer;transition:.2s}
-.fchip:hover{color:var(--ink)}.fchip.on{color:#0a0a0a;background:var(--ink);border-color:var(--ink)}
-.empty{padding:80px clamp(18px,4vw,54px);color:var(--mute);text-align:center;font-size:16px}
-.foot{padding:40px clamp(18px,4vw,54px) 60px;color:var(--faint);font-size:12.5px;border-top:1px solid var(--line);margin-top:30px}
-.foot b{color:var(--mute)}
-
-@media (max-width:640px){
-  nav{margin-left:0}.tab{padding:8px 11px;font-size:14px}
-  .search-wrap input{width:112px}.search-wrap input:focus{width:140px}
-  .mini{display:none}
-  .hero{height:50vh}.card{width:190px}.poster{height:126px}
-  .videoframe{max-height:34vh}.hint{display:none}.transport .yt{margin-left:0;order:5;width:100%;justify-content:center}
-}
-@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.08s!important}}
-:focus-visible{outline:2px solid var(--accent2);outline-offset:3px;border-radius:10px}
+  @media (max-width:560px){
+    #controls .ctl{width:42px;height:42px}
+    #chyron{bottom:clamp(70px,12vh,90px)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #chyron{transition:opacity .3s}
+    .liverec::before,#clock .cln,#tune-label b{animation:none}
+  }
 </style>
 </head>
 <body>
-<div class="ambient" id="ambient"></div>
-<div class="grain"></div>
+  <div id="stage" aria-hidden="true">
+    <div id="player-wrap"><div id="player"></div></div>
+    <canvas id="static"></canvas>
+    <div id="tune-label"><div>PLEASE STAND BY&nbsp;<b>…</b></div></div>
+    <div id="guard"></div>
 
-<div class="app">
-  <header class="bar">
-    <div class="brand" onclick="go('home')"><span class="bug"></span>PULSE</div>
-    <nav>
-      <button class="tab on" data-view="home" onclick="go('home')">Home</button>
-      <button class="tab" data-view="live" onclick="startLive()">Live</button>
-      <button class="tab" data-view="search" onclick="go('search')">Search</button>
-    </nav>
-    <div class="search-wrap">
-      <input id="q" type="search" placeholder="Search titles, artists…" oninput="onSearch(this.value)" onfocus="go('search')">
-    </div>
-    <div class="mini" id="mini" style="display:none" onclick="reopen()">
-      <div class="eq"><i></i><i></i><i></i></div>
-      <div class="mt"><b id="miniT">—</b><span id="miniA">—</span></div>
-      <div class="pp">▶</div>
-    </div>
-  </header>
-
-  <main id="home">
-    <section class="hero" id="hero">
-      <canvas id="heroCanvas"></canvas>
-      <div class="scrim"></div>
-      <div class="inner">
-        <div class="eyebrow"><span class="dot"></span> Featured Premiere</div>
-        <h1 id="heroTitle">—</h1>
-        <div class="meta" id="heroMeta"></div>
-        <div class="cta">
-          <button class="btn play" id="heroPlay">▶ &nbsp;Play video</button>
-          <button class="btn ghost" onclick="startLive()">📺 &nbsp;Watch Live</button>
-        </div>
+    <div id="bug">
+      <div>
+        <div class="mark">M<b>H</b>TV</div>
+        <div class="sub"><span class="liverec">On Air</span> · Music Television</div>
       </div>
-      <div class="hdots" id="heroDots"></div>
-    </section>
-    <div id="shelves"></div>
-    <footer class="foot">
-      <b>PULSE — Music Television.</b> Videos stream inside YouTube's official player — press play, then use the
-      video's own controls to pause or scrub. If a title can't be embedded, use <b>Watch on YouTube</b>.
-      Playback needs an internet connection; some videos may be region-restricted. Not affiliated with any label or network.
-    </footer>
-  </main>
+    </div>
 
-  <main id="search" style="display:none">
-    <div class="searchhead">
-      <div class="eyebrow"><span class="dot"></span> Browse the catalog</div>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="grid" id="searchGrid"></div>
-  </main>
-</div>
+    <div id="clock" aria-hidden="true">--<span class="cln">:</span>--</div>
 
-<section class="stage" id="stage">
-  <div class="stagebg" id="stagebg"></div>
-  <div class="topline">
-    <button class="close" onclick="closeStage()" aria-label="Close">✕</button>
-    <span class="spacer"></span>
-    <div class="chbug">PULSE · CH 01</div>
-    <div class="onair"><span class="bug"></span> ON AIR</div>
-  </div>
-  <div class="screen">
-    <div class="videoframe">
-      <iframe id="ytframe" title="Music video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <div id="chyron">
+      <div class="artist"><span id="cy-artist">ARTIST</span></div><br>
+      <div class="song" id="cy-song">Song Title</div><br>
+      <div class="meta"><span id="cy-meta">ALBUM · 0000</span></div>
+      <div class="bar"></div>
+    </div>
+
+    <div id="controls">
+      <button class="ctl" id="mutebtn" title="Mute / unmute" aria-label="Mute or unmute">
+        <svg id="mute-ico" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-1 7-4.6 7-8.8s-3-7.8-7-8.8z"/></svg>
+      </button>
+      <button class="ctl" id="fsbtn" title="Fullscreen" aria-label="Toggle fullscreen">
+        <svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
+      </button>
     </div>
   </div>
-  <div class="lower">
-    <div class="nowtag" id="nowTag">Now Playing</div>
-    <h2 id="sTitle">—</h2>
-    <div class="sub" id="sSub"></div>
-    <div class="transport">
-      <button class="tbtn icon" id="shuffleBtn" onclick="toggleShuffle()" title="Shuffle">🔀</button>
-      <button class="tbtn" onclick="prev()" title="Previous">⏮ Prev</button>
-      <button class="tbtn" onclick="next()" title="Next">Next ⏭</button>
-      <span class="hint" id="hint">Press play in the video, then use its controls to pause or scrub.</span>
-      <a class="yt" id="ytLink" target="_blank" rel="noopener">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.7-.5-5.4a2.8 2.8 0 0 0-2-2C18.8 4 12 4 12 4s-6.8 0-8.5.6a2.8 2.8 0 0 0-2 2C1 8.3 1 12 1 12s0 3.7.5 5.4a2.8 2.8 0 0 0 2 2C5.2 20 12 20 12 20s6.8 0 8.5-.6a2.8 2.8 0 0 0 2-2C23 15.7 23 12 23 12ZM9.8 15.3V8.7l5.7 3.3-5.7 3.3Z"/></svg>
-        Watch on YouTube
-      </a>
+
+  <!-- power-on screen -->
+  <div id="boot">
+    <canvas id="bootnoise"></canvas>
+    <div class="panel">
+      <div class="logo">M<b>H</b>TV</div>
+      <div class="tag">Music&nbsp;·&nbsp;HTML&nbsp;·&nbsp;Television</div>
+      <button id="powerbtn"><span>▶ &nbsp;Turn on the TV</span></button>
+      <div class="count" id="loadmsg">30 videos loaded · shuffled · no skipping</div>
     </div>
   </div>
-  <div class="upnext">
-    <div class="lbl" id="queueLbl">Up Next</div>
-    <div class="qrow" id="qrow"></div>
-  </div>
-</section>
 
 <script>
-/* ---------------- catalog (yt = official YouTube video id) ---------------- */
-const SONGS=[
- {t:"Hips Don't Lie",a:"Shakira ft. Wyclef Jean",y:2006,al:"Oral Fixation Vol. 2",d:218,st:"orbit",p:["#ff7a18","#ffb703","#e63946"],g:["latin","dance","2000s"],yt:"DUT5rEU6pqM"},
- {t:"I Just Wanna Shine",a:"Fitz and the Tantrums",y:2019,al:"All the Feels",d:207,st:"bloom",p:["#ffd166","#06d6a0","#ff6b6b"],g:["pop","feelgood","modern"],yt:"1OxOHtD0RDw"},
- {t:"Earth Song",a:"Michael Jackson",y:1995,al:"HIStory",d:405,st:"orbit",p:["#2a9d8f","#264653","#e9c46a"],g:["mj","ballad","epic"],yt:"XAi3VTSdTxU"},
- {t:"Beat It",a:"Michael Jackson",y:1983,al:"Thriller",d:258,st:"bars",p:["#ff453a","#ff9f0a","#c0c0c0"],g:["mj","rock","80s","iconic"],yt:"oRdxUFDoQe0"},
- {t:"Billie Jean",a:"Michael Jackson",y:1983,al:"Thriller",d:294,st:"grid",p:["#5e60ce","#48bfe3","#64dfdf"],g:["mj","80s","iconic"],yt:"Zi_XLOBDo_Y"},
- {t:"Thriller",a:"Michael Jackson",y:1982,al:"Thriller · Short Version",d:213,st:"grid",p:["#9d4edd","#38b000","#d00000"],g:["mj","iconic","80s"],yt:"4V90AmXnguw"},
- {t:"Bad",a:"Michael Jackson",y:1987,al:"Bad · Shortened",d:240,st:"bars",p:["#ff003c","#2b2d42","#c0c0c0"],g:["mj","80s","rock"],yt:"dsUXAEzaC3Q"},
- {t:"Dirty Diana",a:"Michael Jackson",y:1987,al:"Bad",d:292,st:"waveform",p:["#b56576","#6d597a","#eaac8b"],g:["mj","rock","80s"],yt:"yUi_S6YWjZw"},
- {t:"Man in the Mirror",a:"Michael Jackson",y:1988,al:"Bad",d:319,st:"bloom",p:["#ffbf69","#ff9f1c","#cbf3f0"],g:["mj","ballad","uplifting"],yt:"PivWY9wn5ps"},
- {t:"In the Closet",a:"Michael Jackson",y:1991,al:"Dangerous",d:288,st:"waveform",p:["#e07a5f","#f2cc8f","#3d405b"],g:["mj","90s","dance"],yt:"4qLY0vbrT8Q"},
- {t:"Remember the Time",a:"Michael Jackson",y:1992,al:"Dangerous",d:240,st:"orbit",p:["#ffd60a","#ffc300","#006466"],g:["mj","90s","dance"],yt:"LeiFF0gvqcc"},
- {t:"Childhood",a:"Michael Jackson",y:1995,al:"HIStory",d:268,st:"bloom",p:["#a2d2ff","#bde0fe","#cdb4db"],g:["mj","ballad","tender"],yt:"puQEcN_iI9o"},
- {t:"2000 Watts",a:"Michael Jackson",y:2001,al:"Invincible",d:264,st:"bars",p:["#00f5d4","#00bbf9","#4361ee"],g:["mj","2000s","funk"],yt:"XjaJAEHltdY"},
- {t:"Heaven Can Wait",a:"Michael Jackson",y:2001,al:"Invincible",d:289,st:"waveform",p:["#7209b7","#3a0ca3","#f72585"],g:["mj","ballad","2000s"],yt:"TDVlDUAIz5k"},
- {t:"Kids",a:"MGMT",y:2008,al:"Oracular Spectacular",d:243,st:"orbit",p:["#f15bb5","#fee440","#00bbf9"],g:["indie","psych","2000s"],yt:"fe4EK4HSPkI"},
- {t:"The Night We Met",a:"Lord Huron",y:2015,al:"Strange Trails",d:208,st:"waveform",p:["#3d5a80","#98c1d9","#293241"],g:["indie","sad","folk"],yt:"wGF7PswOENQ"},
- {t:"I Want You Back",a:"The Jackson 5",y:1969,al:"Diana Ross Presents…",d:179,st:"bloom",p:["#ff5d8f","#ff9e00","#ffd60a"],g:["motown","classic","feelgood"],yt:"iiGY7zX7VqQ"},
- {t:"Only Love Can Hurt Like This",a:"Paloma Faith",y:2014,al:"A Perfect Contradiction",d:217,st:"waveform",p:["#d90429","#ef233c","#ffb5a7"],g:["soul","pop","modern"],yt:"PaKr9gWqwl4"},
- {t:"Rich Girl",a:"Daryl Hall & John Oates",y:1976,al:"Bigger Than Both of Us",d:143,st:"grid",p:["#e9c46a","#f4a261","#e76f51"],g:["yacht","70s"],yt:"AmHE65RAkSY"},
- {t:"Maneater",a:"Daryl Hall & John Oates",y:1982,al:"H2O",d:271,st:"bars",p:["#ffbe0b","#fb5607","#3a0ca3"],g:["yacht","80s"],yt:"yRYFKcMa_Ek"},
- {t:"You Make My Dreams (Come True)",a:"Daryl Hall & John Oates",y:1980,al:"Voices",d:190,st:"bloom",p:["#ffd23f","#ff6b35","#4ecdc4"],g:["yacht","feelgood"],yt:"EErSKhC0CZs"},
- {t:"If the World Was Ending",a:"JP Saxe ft. Julia Michaels",y:2019,al:"Hold It Together",d:208,st:"waveform",p:["#cdb4db","#ffc8dd","#a2d2ff"],g:["modern","ballad","sad"],yt:"1jO2wSpAoxA"},
- {t:"Islands in the Stream",a:"Kenny Rogers & Dolly Parton",y:1983,al:"Eyes That See in the Dark",d:248,st:"bloom",p:["#f4a261","#e9c46a","#e76f51"],g:["country","duet","classic"],yt:"UaNGtgYwSsU"},
- {t:"One Last Breath",a:"Creed",y:2001,al:"Weathered",d:238,st:"waveform",p:["#577399","#495867","#bdd5ea"],g:["rock","2000s","sad"],yt:"qnkuBUAwfe0"},
- {t:"Another Day in Paradise",a:"Phil Collins",y:1989,al:"…But Seriously",d:322,st:"grid",p:["#4361ee","#14213d","#adb5bd"],g:["80s","ballad","social"],yt:"Qt2mbGP6vFI"},
- {t:"Summer Breeze",a:"Seals & Crofts",y:1972,al:"Summer Breeze",d:204,st:"waveform",p:["#f6bd60","#f7ede2","#84a59d"],g:["70s","mellow","classic"],yt:"GQQbjpomexo"},
- {t:"Doctor My Eyes",a:"Jackson Browne",y:1972,al:"Jackson Browne",d:191,st:"bars",p:["#e9c46a","#e76f51","#2a9d8f"],g:["70s","classic","mellow"],yt:"gtlqZOT2fOo"},
- {t:"They Don't Care About Us",a:"Michael Jackson",y:1996,al:"HIStory",d:264,st:"bars",p:["#e63946","#2b2d42","#f1faee"],g:["mj","90s","social"],yt:"QNJL6nfu__Q"},
- {t:"Smooth Criminal",a:"Michael Jackson",y:1988,al:"Bad · Short Version",d:251,st:"grid",p:["#c9ada7","#4a4e69","#f2e9e4"],g:["mj","80s","iconic"],yt:"sFvENQBc-F8"},
- {t:"Black or White",a:"Michael Jackson",y:1991,al:"Dangerous · Short",d:202,st:"orbit",p:["#ffd60a","#ef476f","#118ab2"],g:["mj","90s","iconic"],yt:"F2AitTPI5U0"},
- {t:"Viva la Vida",a:"Coldplay",y:2008,al:"Viva la Vida",d:242,st:"orbit",p:["#e63946","#f4a261","#2a9d8f"],g:["2000s","anthemic","feels"],yt:"dvgZkm1xWPE"},
- {t:"Chasing Cars",a:"Snow Patrol",y:2006,al:"Eyes Open",d:268,st:"waveform",p:["#3d5a80","#98c1d9","#e0fbfc"],g:["2000s","ballad","sad","feels"],yt:"GemKqzILV4w"},
- {t:"Fix You",a:"Coldplay",y:2005,al:"X&Y",d:294,st:"bloom",p:["#023e8a","#0077b6","#caf0f8"],g:["2000s","ballad","feels"],yt:"k4V3Mo61fJM"},
- {t:"Apologize",a:"OneRepublic",y:2007,al:"Dreaming Out Loud",d:208,st:"waveform",p:["#5f0f40","#9a031e","#fb8b24"],g:["2000s","ballad","sad","feels"],yt:"-rKUT6zugJ0"},
- {t:"Clocks",a:"Coldplay",y:2002,al:"A Rush of Blood to the Head",d:307,st:"grid",p:["#118ab2","#073b4c","#06d6a0"],g:["2000s","anthemic","feels"],yt:"d020hcWA_Wg"},
- {t:"How to Save a Life",a:"The Fray",y:2005,al:"How to Save a Life",d:262,st:"bloom",p:["#8d99ae","#2b2d42","#edf2f4"],g:["2000s","ballad","sad","feels"],yt:"jYp0NlXS6xc"},
- {t:"Style",a:"Taylor Swift",y:2015,al:"1989",d:231,st:"grid",p:["#c9184a","#ff758f","#ffb3c1"],g:["modern","pop","cleanpop"],yt:"-CmadmM5cOk"},
- {t:"Blank Space",a:"Taylor Swift",y:2014,al:"1989",d:232,st:"bloom",p:["#e0aaff","#c77dff","#9d4edd"],g:["modern","pop","cleanpop"],yt:"e-ORhEE9VVg"},
- {t:"Fireflies",a:"Owl City",y:2009,al:"Ocean Eyes",d:229,st:"orbit",p:["#00b4d8","#90e0ef","#caf0f8"],g:["2000s","pop","cleanpop"],yt:"psuRGfAaju4"},
- {t:"Counting Stars",a:"OneRepublic",y:2013,al:"Native",d:257,st:"bars",p:["#e76f51","#f4a261","#2a9d8f"],g:["modern","pop","cleanpop"],yt:"hT_nvWreIhg"},
- {t:"Safe and Sound",a:"Capital Cities",y:2013,al:"In a Tidal Wave of Mystery",d:193,st:"bars",p:["#ffbe0b","#fb5607","#ff006e"],g:["modern","pop","cleanpop"],yt:"47dtFZ8CFo8"},
- {t:"Shut Up and Dance",a:"WALK THE MOON",y:2014,al:"Talking Is Hard",d:199,st:"bars",p:["#ff006e","#8338ec","#3a86ff"],g:["modern","pop","cleanpop"],yt:"6JCLY0Rlx6Q"},
- {t:"Demons",a:"Imagine Dragons",y:2013,al:"Night Visions",d:178,st:"waveform",p:["#3a0ca3","#480ca8","#b5179e"],g:["modern","rock","darker"],yt:"mWRsgZuwf_8"},
- {t:"Radioactive",a:"Imagine Dragons",y:2012,al:"Night Visions",d:187,st:"grid",p:["#606c38","#283618","#bc6c25"],g:["2000s","rock","darker"],yt:"ktvTqknDobU"},
- {t:"Sweater Weather",a:"The Neighbourhood",y:2013,al:"I Love You.",d:240,st:"waveform",p:["#22223b","#4a4e69","#9a8c98"],g:["modern","indie","darker"],yt:"GCdwKhTtNNw"},
- {t:"Take Me to Church",a:"Hozier",y:2013,al:"Hozier",d:241,st:"bloom",p:["#432818","#99582a","#ffe6a7"],g:["modern","soul","darker"],yt:"PVjiKRfKpPI"},
- {t:"Everybody Wants to Rule the World",a:"Tears for Fears",y:1985,al:"Songs from the Big Chair",d:252,st:"grid",p:["#3a0ca3","#4361ee","#4cc9f0"],g:["80s","classic","darker"],yt:"aGCdLKXNF3w"},
- {t:"A Sky Full of Stars",a:"Coldplay",y:2014,al:"Ghost Stories",d:267,st:"bloom",p:["#3a0ca3","#7209b7","#4cc9f0"],g:["modern","anthemic","maincharacter"],yt:"VPRjCeoBqrI"},
- {t:"Midnight City",a:"M83",y:2011,al:"Hurry Up, We're Dreaming",d:243,st:"grid",p:["#2b2d42","#8d99ae","#ef233c"],g:["2000s","indie","maincharacter"],yt:"dX3k_QDnzHE"},
- {t:"Electric Love",a:"BØRNS",y:2015,al:"Dopamine",d:218,st:"bloom",p:["#f72585","#7209b7","#4cc9f0"],g:["modern","indie","maincharacter"],yt:"RYr96YYEaZY"},
- {t:"Runaway",a:"AURORA",y:2015,al:"All My Demons Greeting Me as a Friend",d:250,st:"waveform",p:["#3d5a80","#5e60ce","#98c1d9"],g:["modern","indie","maincharacter"],yt:"F6dCKMoRPcQ"},
- {t:"The Nights",a:"Avicii",y:2014,al:"The Days / Nights EP",d:176,st:"bars",p:["#ffbe0b","#fb5607","#3a86ff"],g:["modern","dance","maincharacter"],yt:"UtF6Jej8yb4"},
+/* ============================================================
+   PLAYLIST
+   Each track needs a YouTube video ID (the part after ?v= in a
+   youtube.com URL, or after youtu.be/). If a video won't play
+   or shows "unavailable", it's a wrong/embed-blocked ID — swap it:
+   open the song on YouTube, copy the 11-char ID, paste it below.
+   Bad or blocked videos auto-skip to the next track on their own.
+   ============================================================ */
+const PLAYLIST = [
+  {artist:"Michael Jackson", title:"Don't Stop 'Til You Get Enough", album:"Off the Wall", year:1979, id:"yURRmWtbTbo"},
+  {artist:"Michael Jackson", title:"Rock with You",                  album:"Off the Wall", year:1979, id:"3Y8VBxlG7ho"},
+  {artist:"Michael Jackson", title:"The Girl Is Mine",               album:"Thriller",     year:1982, id:"pAJEZgHfQOc"},
+  {artist:"Michael Jackson", title:"Thriller",                       album:"Thriller",     year:1982, id:"sOnqjkJTMaA"},
+  {artist:"Michael Jackson", title:"Beat It",                        album:"Thriller",     year:1982, id:"oRdxUFDoQe0"},
+  {artist:"Michael Jackson", title:"Billie Jean",                    album:"Thriller",     year:1982, id:"Zi_XLOBDo_Y"},
+  {artist:"Michael Jackson", title:"Human Nature",                   album:"Thriller",     year:1982, id:"_2NoxKZgv-g"},
+  {artist:"Michael Jackson", title:"P.Y.T. (Pretty Young Thing)",    album:"Thriller",     year:1982, id:"1lyu1KKwC74"},
+  {artist:"Michael Jackson", title:"Bad",                            album:"Bad",          year:1987, id:"dsUXAEzaC3Q"},
+  {artist:"Michael Jackson", title:"The Way You Make Me Feel",       album:"Bad",          year:1987, id:"HzZ_urpj4As"},
+  {artist:"Michael Jackson", title:"Man in the Mirror",              album:"Bad",          year:1987, id:"PivWY9wn5ps"},
+  {artist:"Michael Jackson", title:"Dirty Diana",                    album:"Bad",          year:1987, id:"yUi_S6YParE"},
+  {artist:"Michael Jackson", title:"Smooth Criminal",               album:"Bad",          year:1987, id:"h_D3VFfhvs4"},
+  {artist:"Michael Jackson", title:"In the Closet",                  album:"Dangerous",    year:1991, id:"04CXJICwLGc"},
+  {artist:"Michael Jackson", title:"Remember the Time",              album:"Dangerous",    year:1991, id:"LejfEIsjE0g"},
+  {artist:"Michael Jackson", title:"Heal the World",                 album:"Dangerous",    year:1991, id:"BWf-eARnf6U"},
+  {artist:"Michael Jackson", title:"Black or White",                 album:"Dangerous",    year:1991, id:"F2AitTPI5U0"},
+  {artist:"Michael Jackson", title:"You Are Not Alone",              album:"HIStory",      year:1995, id:"nBKCLcs6qhc"},
+  {artist:"Michael Jackson", title:"Earth Song",                     album:"HIStory",      year:1995, id:"XAi3VTSdTxU"},
+  {artist:"Michael Jackson", title:"Heaven Can Wait",                album:"Invincible",   year:2001, id:"5rL9yz9J6uA"},
+  {artist:"Michael Jackson", title:"Chicago",                        album:"Xscape",       year:2014, id:"7Dj1uz2jO1o"},
+  {artist:"Phil Collins",    title:"Another Day in Paradise",        album:"...But Seriously", year:1989, id:"Kk-VvySYUw4"},
+  {artist:"Def Leppard",     title:"Pour Some Sugar on Me",          album:"Hysteria",     year:1987, id:"0UIB9Y4OW6c"},
+  {artist:"MGMT",            title:"Kids",                           album:"Oracular Spectacular", year:2008, id:"vd9v3D6mbrM"},
+  {artist:"Daryl Hall & John Oates", title:"You Make My Dreams (Come True)", album:"Voices", year:1980, id:"PBsjBQmAj8g"},
+  {artist:"Daryl Hall & John Oates", title:"Maneater",              album:"H2O",          year:1982, id:"Q9UvFHfg_pQ"},
+  {artist:"Daryl Hall & John Oates", title:"Rich Girl",             album:"Bigger Than Both of Us", year:1976, id:"eL2sQd2wYP0"},
+  {artist:"Shakira ft. Wyclef Jean", title:"Hips Don't Lie",        album:"Oral Fixation, Vol. 2", year:2006, id:"DUT5rEU6pqM"},
+  {artist:"Lord Huron",      title:"The Night We Met",               album:"Strange Trails", year:2015, id:"KtlgYxa6BMU"},
+  {artist:"The Jackson 5",   title:"I Want You Back",                album:"Diana Ross Presents The Jackson 5", year:1969, id:"s3Q80mk7bxE"},
 ];
-SONGS.forEach((s,i)=>s.id=i);
 
-const $=s=>document.querySelector(s);
-const fmt=s=>{s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+":"+String(s%60).padStart(2,'0')};
-const ytUrl=s=>"https://www.youtube.com/watch?v="+s.yt;
-const thumb=s=>"https://i.ytimg.com/vi/"+s.yt+"/hqdefault.jpg";
-function setAccent(p){document.documentElement.style.setProperty('--accent',p[0]);document.documentElement.style.setProperty('--accent2',p[1]||p[0]);}
+/* ---------- state ---------- */
+let player, order = [], ptr = 0, announced = false, chyronTimer = null;
 
-function art(s){
-  const [c1,c2,c3]=s.p,seed=s.id*37;const R=n=>{let x=Math.sin(seed*9301+n*49297)*233280;return x-Math.floor(x)};
-  let motif='';for(let i=0;i<7;i++)motif+=`<circle cx='${40+R(i)*220}' cy='${20+R(i+9)*70}' r='${8+R(i+3)*20}' fill='${i%2?c2:c3}' opacity='.3'/>`;
-  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='168'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient></defs><rect width='300' height='168' fill='url(%23g)'/>${motif}</svg>`;
-  return "url(\"data:image/svg+xml,"+encodeURIComponent(svg).replace(/#/g,'%23')+"\")";
+/* Fisher–Yates shuffle of indices */
+function shuffle(){
+  order = PLAYLIST.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
+  }
 }
+const track = ()=> PLAYLIST[order[ptr]];
 
-/* shelves */
-const SHELVES=[
- {h:"Trending on Pulse",s:"Right now",f:()=>[5,3,0,18,13,19,14,16]},
- {h:"The King of Pop",s:"Michael Jackson · in order",f:()=>SONGS.filter(s=>s.g.includes('mj')).sort((a,b)=>a.y-b.y).map(s=>s.id)},
- {h:"Yacht Rock & Soft Gold",s:"70s–80s smooth",f:()=>SONGS.filter(s=>s.g.some(g=>['yacht','70s','mellow'].includes(g))).map(s=>s.id)},
- {h:"In Your Feelings",s:"Late-night ballads",f:()=>SONGS.filter(s=>s.g.some(g=>['sad','ballad','social'].includes(g))).map(s=>s.id)},
- {h:"Where It All Began",s:"Roots & classics",f:()=>SONGS.filter(s=>s.g.some(g=>['motown','classic','duet','soul'].includes(g))).map(s=>s.id)},
- {h:"Modern Cuts",s:"2010s & beyond",f:()=>SONGS.filter(s=>s.g.includes('modern')||s.y>=2008).map(s=>s.id)},
- {h:"Nostalgic & Emotional",s:"Still hits",f:()=>SONGS.filter(s=>s.g.includes('feels')).map(s=>s.id)},
- {h:"Clean Pop, Big Vibes",s:"Sing-alongs",f:()=>SONGS.filter(s=>s.g.includes('cleanpop')).map(s=>s.id)},
- {h:"A Little Darker",s:"Dramatic but easy",f:()=>SONGS.filter(s=>s.g.includes('darker')).map(s=>s.id)},
- {h:"Main Character Energy",s:"Cinematic moments",f:()=>SONGS.filter(s=>s.g.includes('maincharacter')).map(s=>s.id)},
-];
-function recShelf(){
-  const last=history[0]!=null?SONGS[history[0]]:SONGS[5];
-  const ids=SONGS.filter(s=>s.id!==last.id&&(s.a===last.a||s.g.some(g=>last.g.includes(g)))).map(s=>s.id).slice(0,10);
-  return {h:`Because you watched ${last.t}`,s:"Recommended for you",ids};
-}
-function posterCard(id){
-  const s=SONGS[id];const el=document.createElement('div');
-  el.className='card';el.tabIndex=0;el.setAttribute('role','button');el.style.setProperty('--cg',s.p[0]);
-  el.innerHTML=`<div class="poster">
-      <div class="art" style="background:${art(s)};background-size:cover"><img src="${thumb(s)}" alt="" loading="lazy" onerror="this.style.display='none'"></div>
-      <div class="chip">${s.g[0]}</div><div class="dur">${fmt(s.d)}</div>
-      <div class="ptxt"><b>${s.t}</b><span>${s.a}</span></div>
-      <div class="go"><div class="pc">▶</div></div>
-    </div>
-    <div class="cmeta"><span>${s.al}</span><span>${s.y}</span></div>`;
-  el.onmouseenter=()=>setAccent(s.p);el.onfocus=()=>setAccent(s.p);
-  el.onclick=()=>playSong(id,false);
-  el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();playSong(id,false)}};
-  return el;
-}
-function renderShelves(){
-  const wrap=$('#shelves');wrap.innerHTML='';
-  [SHELVES[0],recShelf(),...SHELVES.slice(1)].forEach(sh=>{
-    const ids=sh.ids||sh.f();
-    const sec=document.createElement('section');sec.className='shelf';
-    const h=document.createElement('h2');h.innerHTML=`${sh.h} <small>${sh.s}</small>`;
-    const row=document.createElement('div');row.className='row';
-    ids.forEach(id=>row.appendChild(posterCard(id)));
-    sec.append(h,row);wrap.appendChild(sec);
+/* ---------- YouTube IFrame API ---------- */
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+window.onYouTubeIframeAPIReady = function(){
+  shuffle();
+  player = new YT.Player('player',{
+    videoId: track().id,
+    playerVars:{
+      autoplay:0, controls:0, disablekb:1, fs:0, rel:0, playsinline:1,
+      modestbranding:1, iv_load_policy:3, cc_load_policy:0
+    },
+    events:{ onReady:()=>{}, onStateChange:onState, onError:onError }
   });
+};
+
+function onState(e){
+  if(e.data === YT.PlayerState.PLAYING){
+    stopTuning();
+    if(!announced){ showChyron(); announced = true; }
+  } else if(e.data === YT.PlayerState.ENDED){
+    next();
+  }
+}
+function onError(){ // wrong ID, private, or embed-blocked → move on
+  startTuning();
+  setTimeout(next, 1300);
 }
 
-/* hero */
-const HEROES=[5,3,0,19,13];let heroIx=0,heroTimer,heroStyle='grid',heroPal=['#9d4edd','#38b000','#d00000'];
-function renderHero(){
-  const s=SONGS[HEROES[heroIx]];setAccent(s.p);
-  $('#heroTitle').textContent=s.t;
-  $('#heroMeta').innerHTML=`<span class="pill">Music Video</span><span>${s.a}</span><span>•</span><span>${s.y}</span><span>•</span><span>${s.al}</span>`;
-  $('#heroPlay').onclick=()=>playSong(s.id,false);
-  $('#heroDots').innerHTML=HEROES.map((_,i)=>`<i class="${i===heroIx?'on':''}" onclick="setHero(${i})"></i>`).join('');
-  heroStyle=s.st;heroPal=s.p;
-}
-function setHero(i){heroIx=i;renderHero();clearInterval(heroTimer);heroTimer=setInterval(nextHero,7000)}
-function nextHero(){heroIx=(heroIx+1)%HEROES.length;renderHero()}
-
-/* navigation + search */
-let view='home',activeFilter='all';
-const FILTERS=['all','mj','pop','feels','yacht','80s','90s','2000s','modern','ballad','darker','classic','indie'];
-function renderChips(){
-  $('#chips').innerHTML=FILTERS.map(f=>`<button class="fchip ${f===activeFilter?'on':''}" onclick="setFilter('${f}')">${f==='all'?'All':f==='mj'?'Michael Jackson':f}</button>`).join('');
-}
-function setFilter(f){activeFilter=f;renderChips();onSearch($('#q').value);}
-function go(v){
-  view=v;
-  $('#home').style.display=v==='home'?'block':'none';
-  $('#search').style.display=v==='search'?'block':'none';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.view===v));
-  if(v==='search'){renderChips();onSearch($('#q').value);$('#q').focus();}
-  if(v==='home')window.scrollTo({top:0,behavior:'smooth'});
-}
-function onSearch(q){
-  q=(q||'').trim().toLowerCase();
-  const grid=$('#searchGrid');grid.innerHTML='';
-  let res=SONGS.filter(s=>!q||s.t.toLowerCase().includes(q)||s.a.toLowerCase().includes(q)||s.al.toLowerCase().includes(q)||s.g.some(g=>g.includes(q)));
-  if(activeFilter!=='all')res=res.filter(s=>s.g.includes(activeFilter));
-  res.sort((a,b)=>a.t.localeCompare(b.t));
-  if(!res.length){grid.innerHTML=`<div class="empty">Nothing here. Try another search or filter.</div>`;return}
-  res.forEach(s=>grid.appendChild(posterCard(s.id)));
+/* ---------- transport (advance only; never user-skippable) ---------- */
+function next(){
+  ptr++;
+  if(ptr >= order.length){ shuffle(); ptr = 0; }   // loop forever, reshuffled
+  announced = false;
+  hideChyron();
+  startTuning();
+  player.loadVideoById(track().id);
 }
 
-/* ---------------- playback (direct YouTube embed) ---------------- */
-const frame=$('#ytframe');
-let cur=null,shuffle=false,queue=[],qix=0,liveMode=false,history=[5],liveTimer=null;
-function embedSrc(id){return "https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&rel=0&playsinline=1&modestbranding=1&color=white&iv_load_policy=3&fs=1";}
-function buildQueue(startId){
-  if(shuffle){queue=SONGS.map(s=>s.id).filter(i=>i!==startId);
-    for(let i=queue.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[queue[i],queue[j]]=[queue[j],queue[i]];}
-    queue.unshift(startId);}
-  else queue=SONGS.map(s=>s.id);
-  qix=queue.indexOf(startId);
+function begin(){
+  shuffle && null;
+  announced = false;
+  startTuning();
+  player.loadVideoById(track().id);
+  player.unMute();
+  player.setVolume(100);
+  player.playVideo();
 }
-function playSong(id,live){
-  liveMode=!!live;
-  if(!queue.length||queue.indexOf(id)<0||!live)buildQueue(id);
-  qix=queue.indexOf(id);
-  openStage();loadCurrent();
-}
-function loadCurrent(){
-  cur=SONGS[queue[qix]];setAccent(cur.p);
-  history=[cur.id,...history.filter(h=>h!==cur.id)].slice(0,8);
-  $('#sTitle').textContent=cur.t;
-  $('#sSub').innerHTML=`<span class="pill">Music Video</span><span>${cur.a}</span><span>•</span><span>${cur.y}</span><span>•</span><span>${cur.al}</span>`;
-  $('#ytLink').href=ytUrl(cur);
-  $('#nowTag').textContent=liveMode?'On the channel':'Now Playing';
-  $('#queueLbl').textContent=liveMode?'Coming up on the channel':'Up Next';
-  $('#hint').textContent=liveMode?'Live channel — auto-advances to the next video.':'Press play in the video, then use its controls to pause or scrub.';
-  $('#miniT').textContent=cur.t;$('#miniA').textContent=cur.a;
-  frame.src=embedSrc(cur.yt);
-  renderQueue();scheduleLive();
-}
-function scheduleLive(){
-  clearTimeout(liveTimer);
-  if(liveMode)liveTimer=setTimeout(()=>{next();},(cur.d+4)*1000);
-}
-function renderQueue(){
-  const row=$('#qrow');row.innerHTML='';
-  const order=[...queue.slice(qix),...queue.slice(0,qix)];
-  order.forEach((id,i)=>{
-    const s=SONGS[id];const c=document.createElement('div');c.className='qcard'+(i===0?' now':'');
-    c.innerHTML=`<div class="qnum">${i===0?'▶':i}</div><div class="qthumb"><img src="${thumb(s)}" alt="" loading="lazy" onerror="this.style.display='none'"></div><div style="overflow:hidden"><b>${s.t}</b><span>${s.a}</span></div>`;
-    c.onclick=()=>{qix=queue.indexOf(id);loadCurrent();};
-    row.appendChild(c);
-  });
-}
-function next(){qix=(qix+1)%queue.length;loadCurrent();}
-function prev(){qix=(qix-1+queue.length)%queue.length;loadCurrent();}
-function toggleShuffle(){shuffle=!shuffle;$('#shuffleBtn').classList.toggle('act',shuffle);if(cur){buildQueue(cur.id);renderQueue();}}
-function openStage(){const st=$('#stage');st.classList.add('show');st.classList.toggle('live',liveMode);$('#mini').style.display='none';document.body.style.overflow='hidden';}
-function closeStage(){$('#stage').classList.remove('show');$('#stage').classList.remove('live');document.body.style.overflow='';frame.src='about:blank';clearTimeout(liveTimer);if(cur)$('#mini').style.display='flex';liveMode=false;}
-function reopen(){openStage();frame.src=embedSrc(cur.yt);scheduleLive();}
-function startLive(){shuffle=true;$('#shuffleBtn').classList.add('act');playSong(SONGS[(Math.random()*SONGS.length)|0].id,true);document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.view==='live'));}
 
-/* keyboard */
-addEventListener('keydown',e=>{
-  if(!$('#stage').classList.contains('show'))return;
-  if(e.key==='Escape')closeStage();
-  else if(e.key==='n'||e.key==='N'||e.key==='ArrowRight')next();
-  else if(e.key==='p'||e.key==='P'||e.key==='ArrowLeft')prev();
+/* ---------- chyron ---------- */
+function showChyron(){
+  const t = track();
+  document.getElementById('cy-artist').textContent = t.artist.toUpperCase();
+  document.getElementById('cy-song').textContent   = t.title;
+  document.getElementById('cy-meta').textContent   = t.album + " · " + t.year;
+  const el = document.getElementById('chyron');
+  el.classList.add('show');
+  clearTimeout(chyronTimer);
+  chyronTimer = setTimeout(()=> el.classList.remove('show'), 7000);
+}
+function hideChyron(){ document.getElementById('chyron').classList.remove('show'); }
+
+/* ---------- tuning static ---------- */
+const sCanvas = document.getElementById('static');
+const sCtx = sCanvas.getContext('2d');
+let staticRAF = null;
+function sizeStatic(){ sCanvas.width = Math.floor(innerWidth/3); sCanvas.height = Math.floor(innerHeight/3); }
+function drawStatic(){
+  const w=sCanvas.width,h=sCanvas.height,img=sCtx.createImageData(w,h),d=img.data;
+  for(let i=0;i<d.length;i+=4){ const v=Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
+  sCtx.putImageData(img,0,0);
+  staticRAF = requestAnimationFrame(drawStatic);
+}
+function startTuning(){
+  sCanvas.classList.add('on');
+  document.getElementById('tune-label').classList.add('on');
+  if(!staticRAF && !matchMedia('(prefers-reduced-motion:reduce)').matches) drawStatic();
+}
+function stopTuning(){
+  sCanvas.classList.remove('on');
+  document.getElementById('tune-label').classList.remove('on');
+  cancelAnimationFrame(staticRAF); staticRAF = null;
+}
+sizeStatic(); addEventListener('resize', sizeStatic);
+
+/* ---------- boot noise (power screen) ---------- */
+const bCanvas = document.getElementById('bootnoise');
+const bCtx = bCanvas.getContext('2d');
+function sizeBoot(){ bCanvas.width = Math.floor(innerWidth/3); bCanvas.height = Math.floor(innerHeight/3); }
+let bootRAF=null;
+function bootDraw(){
+  const w=bCanvas.width,h=bCanvas.height,img=bCtx.createImageData(w,h),d=img.data;
+  for(let i=0;i<d.length;i+=4){ const v=Math.random()*90|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
+  bCtx.putImageData(img,0,0);
+  bootRAF=requestAnimationFrame(bootDraw);
+}
+sizeBoot(); addEventListener('resize', sizeBoot);
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches) bootDraw();
+
+/* ---------- clock ---------- */
+setInterval(()=>{
+  const n=new Date();
+  const hh=String(n.getHours()).padStart(2,'0');
+  const mm=String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').innerHTML = hh+'<span class="cln">:</span>'+mm;
+},1000);
+
+/* ---------- controls ---------- */
+document.getElementById('mutebtn').addEventListener('click',()=>{
+  if(!player) return;
+  const ico=document.getElementById('mute-ico');
+  if(player.isMuted()){ player.unMute(); ico.innerHTML='<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1c2.9.9 5 3.6 5 6.7s-2.1 5.8-5 6.7v2.1c4-1 7-4.6 7-8.8s-3-7.8-7-8.8z"/>'; }
+  else{ player.mute(); ico.innerHTML='<path d="M3 9v6h4l5 5V4L7 9H3zm18.5-1.9L20.1 5.7 17.8 8 15.5 5.7 14.1 7.1 16.4 9.4 14.1 11.7 15.5 13.1 17.8 10.8 20.1 13.1 21.5 11.7 19.2 9.4z"/>'; }
+});
+document.getElementById('fsbtn').addEventListener('click',()=>{
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
+  else{ document.exitFullscreen?.(); }
 });
 
-/* hero visualizer */
-function fitCanvas(c){const dpr=Math.min(2,devicePixelRatio||1);const r=c.getBoundingClientRect();c.width=r.width*dpr;c.height=r.height*dpr;const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return{x,w:r.width,h:r.height};}
-const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-function amp(t,i){return .5+.5*Math.sin(t*2+i*.6)*Math.sin(t*.7+i)*.9+.1*Math.sin(t*5+i*2);}
-function hxc(c,a){const n=c.replace('#','');const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16);return`rgba(${r},${g},${b},${a})`;}
-function rr(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.fill();}
-function drawViz(x,w,h,st,pal,t){
-  x.clearRect(0,0,w,h);
-  if(st==='bars'){const n=Math.min(48,Math.floor(w/16)),bw=w/n;for(let i=0;i<n;i++){const a=Math.abs(amp(t*1.2,i));const bh=h*.06+a*h*.5;const g=x.createLinearGradient(0,h-bh,0,h);g.addColorStop(0,hxc(pal[0],.95));g.addColorStop(1,hxc(pal[1]||pal[0],.35));x.fillStyle=g;rr(x,i*bw+bw*.15,h/2-bh/2,bw*.7,bh,4);}}
-  else if(st==='orbit'){const cx=w/2,cy=h/2;for(let ring=0;ring<4;ring++){const R=Math.min(w,h)*.12+ring*Math.min(w,h)*.09,cnt=10+ring*6;for(let i=0;i<cnt;i++){const ang=i/cnt*Math.PI*2+t*(.3+ring*.15)*(ring%2?1:-1);const rr2=R+Math.sin(t*2+i)*10;const px=cx+Math.cos(ang)*rr2,py=cy+Math.sin(ang)*rr2*.7;x.beginPath();x.arc(px,py,2.4+Math.abs(Math.sin(t+i))*2.4,0,7);x.fillStyle=hxc(pal[i%pal.length],.7);x.fill();}}const gg=x.createRadialGradient(cx,cy,0,cx,cy,120);gg.addColorStop(0,hxc(pal[0],.5));gg.addColorStop(1,'transparent');x.fillStyle=gg;x.beginPath();x.arc(cx,cy,120,0,7);x.fill();}
-  else if(st==='waveform'){for(let L=0;L<3;L++){x.beginPath();for(let px=0;px<=w;px+=6){const y=h/2+Math.sin(px/70+t*(1+L*.4)+L)*(h*.12)*(1-L*.2)*(.6+.4*Math.sin(t+px/200));px===0?x.moveTo(px,y):x.lineTo(px,y);}x.strokeStyle=hxc(pal[L%pal.length],.55-L*.13);x.lineWidth=3-L;x.stroke();}}
-  else if(st==='grid'){const hz=h*.42;x.strokeStyle=hxc(pal[0],.35);x.lineWidth=1.4;for(let i=1;i<=12;i++){const p=i/12,y=hz+p*p*(h-hz);x.globalAlpha=p;x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke();}x.globalAlpha=1;for(let i=-10;i<=10;i++){const vx=w/2+i*(w/16);x.beginPath();x.moveTo(w/2+i*10,hz);x.lineTo(vx+(vx-w/2)*1.6,h);x.strokeStyle=hxc(pal[1]||pal[0],.28);x.stroke();}const sun=x.createLinearGradient(0,hz-90,0,hz);sun.addColorStop(0,hxc(pal[2]||pal[0],.9));sun.addColorStop(1,hxc(pal[0],.2));x.fillStyle=sun;x.beginPath();x.arc(w/2,hz,70,Math.PI,0);x.fill();for(let i=0;i<w;i+=3){x.fillStyle=`rgba(0,0,0,${((i/3+t*30|0)%2)?.12:0})`;x.fillRect(i,0,3,h);}}
-  else{const cx=w/2,cy=h/2;for(let i=0;i<6;i++){const ph=(t*.4+i/6)%1,R=ph*Math.max(w,h)*.6;x.beginPath();x.arc(cx,cy,R,0,7);x.strokeStyle=hxc(pal[i%pal.length],(1-ph)*.5);x.lineWidth=3;x.stroke();}for(let i=0;i<24;i++){const ang=i/24*Math.PI*2,d=60+Math.sin(t*1.5+i)*40;const px=cx+Math.cos(ang+t*.2)*d,py=cy+Math.sin(ang+t*.2)*d;x.beginPath();x.arc(px,py,3+Math.abs(Math.sin(t+i))*3,0,7);x.fillStyle=hxc(pal[i%pal.length],.6);x.fill();}const gg=x.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h)*.5);gg.addColorStop(0,hxc(pal[0],.25));gg.addColorStop(1,'transparent');x.fillStyle=gg;x.fillRect(0,0,w,h);}
-}
-let heroCtx,tAcc=0,lastF=performance.now();
-function setupCanvas(){heroCtx=fitCanvas($('#heroCanvas'));}
-function loop(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;tAcc+=reduce?dt*.15:dt;if($('#home').style.display!=='none'&&heroCtx)drawViz(heroCtx.x,heroCtx.w,heroCtx.h,heroStyle,heroPal,tAcc);requestAnimationFrame(loop);}
-addEventListener('resize',setupCanvas);
-
-/* boot */
-renderHero();renderShelves();renderChips();setupCanvas();heroTimer=setInterval(nextHero,7000);requestAnimationFrame(loop);
+/* ---------- power on ---------- */
+document.getElementById('powerbtn').addEventListener('click',()=>{
+  const boot=document.getElementById('boot');
+  boot.style.transition='opacity .35s'; boot.style.opacity='0';
+  cancelAnimationFrame(bootRAF); bootRAF=null;
+  setTimeout(()=> boot.remove(), 380);
+  document.documentElement.requestFullscreen?.().catch(()=>{});
+  const wait=setInterval(()=>{ if(player && player.loadVideoById){ clearInterval(wait); begin(); } },120);
+});
 </script>
 </body>
 </html>
