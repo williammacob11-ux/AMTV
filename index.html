@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
 <title>MHTV — Music HTML Television</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,7 +129,7 @@
 </head>
 <body>
   <div id="stage" aria-hidden="true">
-    <div id="player-wrap"><div id="player"></div></div>
+    <div id="player-wrap"></div>
     <canvas id="static"></canvas>
     <div id="tune-label"><div>PLEASE STAND BY&nbsp;<b>…</b></div></div>
     <div id="guard"></div>
@@ -232,13 +233,22 @@ document.head.appendChild(tag);
 
 window.onYouTubeIframeAPIReady = function(){
   shuffle();
+  // Build the iframe ourselves so we can force a referrer policy + origin.
+  // (Fixes YouTube "Error 153" — the player needs to know where it's embedded.)
+  const iframe = document.createElement('iframe');
+  iframe.id = 'player';
+  iframe.setAttribute('frameborder','0');
+  iframe.setAttribute('referrerpolicy','strict-origin-when-cross-origin');
+  iframe.setAttribute('allow','autoplay; encrypted-media; fullscreen; picture-in-picture');
+  const p = new URLSearchParams({
+    enablejsapi:'1', autoplay:'0', controls:'0', disablekb:'1', fs:'0', rel:'0',
+    playsinline:'1', modestbranding:'1', iv_load_policy:'3', cc_load_policy:'0',
+    origin: location.origin
+  });
+  iframe.src = 'https://www.youtube.com/embed/' + track().id + '?' + p.toString();
+  document.getElementById('player-wrap').appendChild(iframe);
   player = new YT.Player('player',{
-    videoId: track().id,
-    playerVars:{
-      autoplay:0, controls:0, disablekb:1, fs:0, rel:0, playsinline:1,
-      modestbranding:1, iv_load_policy:3, cc_load_policy:0
-    },
-    events:{ onReady:()=>{}, onStateChange:onState, onError:onError }
+    events:{ onStateChange:onState, onError:onError }
   });
 };
 
